@@ -14,6 +14,8 @@ from PressurePage import PressurePage
 from AQIPage import AQIPage
 from SettingsPage import SettingsPage
 
+time.sleep(1.0) 
+
 import gc
 gc.collect()
 
@@ -26,7 +28,7 @@ select_button = None
 battery_pin = None
 
 
-COMPUTER = True
+COMPUTER = False
 
 
 if COMPUTER:
@@ -49,17 +51,17 @@ else:
     import analogio
 
 
-    next_button = digitalio.DigitalInOut(board.GP14) #14
+    next_button = digitalio.DigitalInOut(board.D3) #14
     next_button.switch_to_input(pull=digitalio.Pull.UP)
-    select_button = digitalio.DigitalInOut(board.GP26) #26
+    select_button = digitalio.DigitalInOut(board.D6) #26
     select_button.switch_to_input(pull=digitalio.Pull.UP)
-    battery_pin = analogio.AnalogIn(board.GP25)
-    battery_pin.switch_to_input(pull=digitalio.Pull.UP)
+    
+    battery_pin = analogio.AnalogIn(board.D0)
 
 
     i2c_sensor = busio.I2C(
-        scl=board.GP7,
-        sda=board.GP6,
+        scl=board.D5,
+        sda=board.D4,
         frequency=100_000
     ) #400
 
@@ -67,17 +69,12 @@ else:
     bme680 = adafruit_bme680.Adafruit_BME680_I2C(i2c_sensor, address=0x77) 
     bme680.sea_level_pressure = 1017.9
 
-
-    #DC / RES / CS -> any standard digital pin (SPI0)
-    spi = busio.SPI(clock=board.GP2, MOSI=board.GP3)
-
-    #SCL IS SERIAL CLOCK. GP2 is SPI0 SCK
-    #SDA IS MOSI. GP3 is TX /MOSI
+    spi = busio.SPI(clock=board.D8, MOSI=board.D10)
 
     display_bus = FourWire(
         spi, 
-        command=board.GP0, # data command is any SPI0. I did GP0
-        chip_select=board.GP1,  # GP1 is SPI1 CSn
+        command=board.D9, 
+        chip_select=board.D7, 
         reset=None  
     )
 
@@ -93,7 +90,7 @@ else:
 def get_voltage():
     global battery_pin
     if not COMPUTER:
-        return battery_pin / 65535 * 3.7
+        return battery_pin.value / 65535 * 3.7
     else:
         return 3.3
 
@@ -223,29 +220,27 @@ master_group.append(content_group)
 ### PAGE ARCHITECTURE ###
 
 
-pages = [
-    DashboardPage(data_store),
-    TemperaturePage(data_store),
-    PressurePage(data_store),
-    AQIPage(data_store),
-    SettingsPage(data_store),
+PAGE_CLASSES = [
+    DashboardPage,
+    TemperaturePage,
+    PressurePage,
+    AQIPage,
+    SettingsPage,
 ]
 
 page_index = 0
 current_page_instance = None
 
-
 def show_page(idx):
-    
     global current_page_instance
     
     while len(content_group) > 0:
         content_group.pop()
         
     current_page_instance = None
-    gc.collect()
-    
-    current_page_instance = pages[idx]
+    gc.collect() 
+
+    current_page_instance = PAGE_CLASSES[idx](data_store)
     
     current_page_instance.on_show()
     content_group.append(current_page_instance.group)
@@ -257,7 +252,7 @@ def show_page(idx):
 
 def pagers():
     global page_index
-    page_index = (page_index + 1) % len(pages) 
+    page_index = (page_index + 1) % len(PAGE_CLASSES) 
     show_page(page_index)
 
 def global_init():
@@ -377,6 +372,7 @@ while True:
         #print("Free RAM:", gc.mem_free(), "bytes")
         gc.collect()
         last_gc_time = now
+        print(gc.mem_free(), gc.mem_alloc())
     
 
     if now - last_sensor_read >= data_store.get_setting("interval"):
@@ -408,4 +404,5 @@ while True:
         display.refresh()
 
     time.sleep(0.01)
+
 
