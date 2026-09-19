@@ -13,6 +13,7 @@ from TemperaturePage import TemperaturePage
 from PressurePage import PressurePage
 from AQIPage import AQIPage
 from SettingsPage import SettingsPage
+from battery import Battery
 
 time.sleep(1.0) 
 
@@ -56,7 +57,7 @@ else:
     select_button = digitalio.DigitalInOut(board.D6) #26
     select_button.switch_to_input(pull=digitalio.Pull.UP)
     
-    battery_pin = analogio.AnalogIn(board.D0)
+    battery_pin = analogio.AnalogIn(board.A0)
 
 
     i2c_sensor = busio.I2C(
@@ -89,13 +90,16 @@ else:
 
 def get_voltage():
     global battery_pin
+    print("battery pin value:", battery_pin.value)
     if not COMPUTER:
-        return battery_pin.value / 65535 * 3.7
+        pv = battery_pin.value / 65535 * 3.7
+        return pv * 2.0
     else:
         return 3.3
 
 
 data_store = DataStore(bme680)
+data_store.load_settings()
 
 ### DISPLAY STUFF
 master_group = displayio.Group()
@@ -117,99 +121,7 @@ master_group.append(bg_line)
 # bat group is premanently outside of the content group it's async updated
 # do i really know waht async means not really
 # its updated silently with other updates
-
-
-bat_palette = displayio.Palette(5) 
-bat_palette[0] = 0x000000 
-bat_palette[1] = 0xFFFFFF
-bat_palette[2] = 0x00FFFF
-bat_palette[3] = 0xFFA500
-bat_palette[4] = 0xFF0000  
-
-bat_bitmap = displayio.Bitmap(22, 10, 5) 
-bat_tilegrid = displayio.TileGrid(bat_bitmap, pixel_shader=bat_palette) 
-
-bat_group = displayio.Group(x=display.width - 28, y=5) 
-bat_group.append(bat_tilegrid) 
-master_group.append(bat_group) 
-
-signal = label.Label(
-    terminalio.FONT, 
-    text="00%", 
-    color=0xFFFFFF, 
-    anchor_point=(1.0, 0.0),
-    anchored_position=(display.width - 28 -4, 4), 
-    scale=1
-)
-master_group.append(signal)
-
-def better_bitmap_fill(bat_bitmap, x, y, w, h, value):
-    bitmaptools.fill_region(bat_bitmap, x, y, x+w, y+h, value)
-    # if you enter 1 1 1 1 
-    # it is just going to be one pixel.
-    
-
-def draw_battery_shell():
-    bat_bitmap.fill(0)
-
-    better_bitmap_fill(bat_bitmap, 0, 0, 20, 10, value=1)
-    better_bitmap_fill(bat_bitmap, 20, 2, 2, 6, value=1) 
-    better_bitmap_fill(bat_bitmap, 1, 1, 18, 8, value=0)
-
-draw_battery_shell() # just once
-
-
-
-BATTERY_CURVE = [
-    (4.20, 100),
-    (4.10,  90),
-    (4.00,  80),
-    (3.90,  70),
-    (3.80,  60),
-    (3.70,  50),
-    (3.60,  40),
-    (3.50,  30),
-    (3.40,  20),
-    (3.20,  10),
-    (3.00,   0)
-]
-
-def voltage_to_percentage(voltage):
-
-    for i in range(len(BATTERY_CURVE) - 1):
-        v_high, p_high = BATTERY_CURVE[i]
-        v_low, p_low = BATTERY_CURVE[i + 1]
-        
-        if voltage >= v_low:
-            voltage_range = v_high - v_low
-            percentage_range = p_high - p_low
-            position_over = voltage - v_low
-            
-            return int(p_low + (position_over / voltage_range) * percentage_range)
-        
-
-            
-    return 0
-
-def _update_battery(voltage = 3.6):
-    
-    p_100 = voltage_to_percentage(voltage)
-    signal.text = f"{p_100}%"
-    
-    percentage = p_100 / 100
-    
-    if percentage > 0.6:
-        pcolor = 2
-    elif percentage > 0.2:
-        pcolor = 3
-    else:
-        pcolor = 4
-    
-    width = max(1, int(percentage * 16))
-    better_bitmap_fill(bat_bitmap, 1, 1, 18, 8, value=0)
-    better_bitmap_fill(bat_bitmap, 2, 2, width, 6, value=pcolor)
-        
-        
+battery_widget = Battery(master_group, display.width)
 
 
 content_group = displayio.Group()
@@ -233,6 +145,15 @@ current_page_instance = None
 
 def show_page(idx):
     global current_page_instance
+    
+    # check if settings page
+    
+    if current_page_instance is not None:
+        if type(current_page_instance).__name__ == "SettingsPage":
+            if current_page_instance.needs_write_update():
+                data_store.save_settings()
+    
+    # continue
     
     while len(content_group) > 0:
         content_group.pop()
@@ -399,10 +320,8 @@ while True:
         current_page_instance.update_page()
         upd = False
         
-        _update_battery(get_voltage())
+        battery_widget.update(get_voltage())
         gc.collect()
         display.refresh()
 
     time.sleep(0.01)
-
-

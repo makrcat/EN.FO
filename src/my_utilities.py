@@ -1,9 +1,9 @@
-
 import displayio
 import terminalio
 import bitmaptools
 from adafruit_display_text import label, wrap_text_to_pixels
 from array import array
+import json
 
 import math
 
@@ -20,31 +20,31 @@ def wrap_pos(text, a, b):
         return a
     return b
 
-class RollingLog:
-    def __init__(self, cols, header: tuple, max_len=5):
-        self.max_len = max_len
-        self.cols = cols
-        self.log = []
-        self.header = header
-
-    def add_entry(self, entry_tuple: tuple):
-        if len(entry_tuple) != self.cols:
-            return
-        if len(self.log) >= self.max_len:
-            self.log.pop(0)
-        self.log.append(entry_tuple)
-
-    def get_row(self, index: int):
-        return self.log[index]
-        
-    def len(self):
-        return len(self.log)
-    
-    def getRows(self):
-        return self.max_len
-    
-    def getCols(self):
-        return self.cols
+# class RollingLog:
+#     def __init__(self, cols, header: tuple, max_len=5):
+#         self.max_len = max_len
+#         self.cols = cols
+#         self.log = []
+#         self.header = header
+#
+#     def add_entry(self, entry_tuple: tuple):
+#         if len(entry_tuple) != self.cols:
+#             return
+#         if len(self.log) >= self.max_len:
+#             self.log.pop(0)
+#         self.log.append(entry_tuple)
+#
+#     def get_row(self, index: int):
+#         return self.log[index]
+#         
+#     def len(self):
+#         return len(self.log)
+#    
+#     def getRows(self):
+#         return self.max_len
+#    
+#     def getCols(self):
+#         return self.cols
 
 
 class Reading:
@@ -93,7 +93,6 @@ class Reading:
 
     def getReading(self):
         return self.log[-1]
-        # should have updated before so that it's not empty. you can't get reading if you never updated the log
         
 
 
@@ -115,20 +114,43 @@ class DataStore:
             "interval": 3.0,
         }
         
-        self.rollingLog = RollingLog(3, ("temp", "alt", "aqi"))
+        # self.rollingLog = RollingLog(3, ("temp", "alt", "aqi"))
         
-    def logger_add(self, tple):
-        self.rollingLog.add_entry(tple)
-        
-    def logger_get_row(self, r):
-        self.rollingLog.get_row(r)
-        
-    def addLog(self):
-        temp = self.getConvertedVal("temperature")
-        hu = self.getVal("humidity")
-        alt = self.getConvertedVal("altitude")
-        tstuff = f"t:{temp}\nhu:{hu:.1f}"
-        self.logger_add((tstuff, "hi", "hi"))
+    def save_settings(self, filename="/settings.json"):
+        try:
+            with open(filename, "w") as f:
+                json.dump(self.settings, f)
+            print("Settings successfully saved to JSON.")
+            
+        except Exception as e:
+            print("Error saving settings:", e)
+          
+    def load_settings(self, filename="/settings.json"):
+        try:
+            with open(filename, "r") as f:
+                saved_settings = json.load(f)
+                
+                for key in saved_settings:
+                    if key in self.settings:
+                        self.settings[key] = saved_settings[key]
+                        
+                print("Settings successfully loaded from JSON.")
+          
+        except Exception as e:
+            print(f"Error or no settings found ({e}), using defaults.")
+              
+    # def logger_add(self, tple):
+    #     self.rollingLog.add_entry(tple)
+    #     
+    # def logger_get_row(self, r):
+    #     self.rollingLog.get_row(r)
+    #     
+    # def addLog(self):
+    #     temp = self.getConvertedVal("temperature")
+    #     hu = self.getVal("humidity")
+    #     alt = self.getConvertedVal("altitude")
+    #     tstuff = f"t:{temp}\nhu:{hu:.1f}"
+    #     self.logger_add((tstuff, "hi", "hi"))
         
     def set_sea_level(self, val):
         self.sensor.sea_level_pressure = int(val)
@@ -242,8 +264,6 @@ class DataStore:
             return
         
         interval = self.settings["interval"]
-
-        
         required_samples = int(new_range / interval)
         
         old_data = self.active_reading.get_data_log()
@@ -252,7 +272,6 @@ class DataStore:
             new_reading.addReading(val)
             
         self.active_reading = new_reading
-
 
 
 class SparkGraph:
@@ -316,8 +335,6 @@ class SparkGraph:
         self.leftLabel.text = f"t-{inc}s"
 
     def draw(self, plot_points, x_range_recent, rmin, rmax, label):
-        
-        
         self.max_label.text = str(int(rmax))
         self.min_label.text = str(int(rmin))
         self.updateLeftLabel(label)
@@ -376,9 +393,8 @@ class DataGraph:
         rmin -= 0.2
         rmax += 0.2
 
-        # Calculate the exact time span based on the sample window slots (N - 1 intervals)
         total_time_span = (max_samples - 1) * interval 
-        lbl = int((max_samples) * interval )
+        lbl = int((max_samples) * interval)
 
         self.sparkgraph.draw(plot_points, int(total_time_span), rmin, rmax, lbl)
         
@@ -411,7 +427,7 @@ class tempGradientObject:
         for i in range(0, self.steps):
             self.palette[i] = color_list[i]
 
-        self.palette[self.steps] = self.background # last color as black background
+        self.palette[self.steps] = self.background
 
         if self.orientation == "horizontal":
             self.bitmap = displayio.Bitmap(self.width, 1, len(self.palette))
@@ -479,11 +495,9 @@ class tempGradientObject:
 
     def _draw(self):
         if self.orientation == "horizontal":
-            
             for x in range(self.width):
                 self.bitmap[x, 0] = x
         else:
-            
             for y in range(self.height):
                 color_index = self.height - 1 - y 
                 self.bitmap[0, y] = color_index
@@ -496,5 +510,3 @@ class tempGradientObject:
             self.palette[i] = color_list[i]
             
         self._draw()
-
-            

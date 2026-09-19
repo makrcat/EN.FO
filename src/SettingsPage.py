@@ -267,6 +267,13 @@ class SettingsPage(Page):
             self.interval_group.ones,
         ]
         
+        self.need_write_update = False
+        
+    def needs_write_update(self):
+        return self.need_write_update
+        self.need_write_update = False
+        
+        
     def on_show(self):
         self.store.set_active_metric(None)
     
@@ -284,9 +291,9 @@ class SettingsPage(Page):
         
         selector = self.selectors[self.cur_i]
         selector.on_select()
-        
-        
+    
         selector.parent.update_value(self.store)
+        self.need_write_update = True
         
     def on_short_next(self):
         if self.is_editing:
