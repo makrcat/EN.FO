@@ -142,6 +142,8 @@ class PressurePage(Page):
         
         self.graph_range = 15
         self.graph = DataGraph(xpos=14, ypos=132, width=122, height=90, group=self.group)
+        
+        self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 1)
     
     def on_show(self):
         self.store.set_active_metric("altitude", self.graph_range)
@@ -157,6 +159,8 @@ class PressurePage(Page):
     def on_long_select(self):
         p_str = str(self.store.getConvertedVal("altitude")) + self.store.get_setting("measurement_unit")
         self.store.rollingLog.add_entry(("-", p_str, "-"))
+        
+        self.headerMomentary.start()
 
     def on_short_next(self):
         pass
@@ -167,6 +171,8 @@ class PressurePage(Page):
         self.HILO_box.update(self.store)
         self.description_box.update(self.store)
         self.boil_box.update(self.store)
+        
+        self.headerMomentary.checkForUpdate()
         
     def data_schedule_update(self):
         readings = self.store.getVariableData()

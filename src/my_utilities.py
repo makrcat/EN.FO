@@ -4,11 +4,37 @@ import bitmaptools
 from adafruit_display_text import label, wrap_text_to_pixels
 from array import array
 import json
+import time
 
 import math
 
 
 DATA_RANGE = [15, 30]
+
+class MomentaryText:
+    def __init__(self, label, text, interval):
+        self.label = label
+        self.text = text
+        self.original_text = label.text
+        self.interval = interval
+        
+        self.counterStart = None
+        self.hasStarted = False
+        
+    def start(self):
+        self.hasStarted = True
+        self.counterStart = time.monotonic()
+        self.label.text = self.text
+        
+    def checkForUpdate(self):
+        
+        if self.hasStarted:
+            if time.monotonic() - self.counterStart > self.interval:
+                # reset it
+                self.label.text = self.original_text
+                # no more
+                self.hasStarted = False
+            
 
 def wrap_text(text, width, font):
     return "\n".join(wrap_text_to_pixels(

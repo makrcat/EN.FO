@@ -154,6 +154,8 @@ class TemperaturePage(Page):
         self.graph_range = 15
         self.graph = DataGraph(xpos=14, ypos=132, width=122, height=90, group=self.group)
         
+        self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 1)
+        
     def on_show(self):
         self.store.set_active_metric("temperature", self.graph_range)
 
@@ -171,7 +173,8 @@ class TemperaturePage(Page):
     def on_long_select(self):
         temp_str = str(self.store.getConvertedVal("temperature")) + self.store.get_setting("temperature_unit")
         self.store.rollingLog.add_entry((temp_str, "-", "-"))
-
+        self.headerMomentary.start()
+        
     def on_short_next(self):
         pass 
 
@@ -181,6 +184,8 @@ class TemperaturePage(Page):
         self.dew_box.update(self.store)
         self.FL_box.update(self.store)
         self.description_box.update(self.store)
+        
+        self.headerMomentary.checkForUpdate()
 
             
     def data_schedule_update(self):

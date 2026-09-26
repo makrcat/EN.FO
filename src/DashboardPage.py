@@ -177,6 +177,8 @@ class DashboardPage(Page):
         self.group.append(self.alt_box)
         self.group.append(self.gas_box)
         self.group.append(self.last_box)
+        
+        self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 1)
    
 
     def on_show(self):
@@ -190,6 +192,8 @@ class DashboardPage(Page):
         a_str = str(self.store.getConvertedVal("aqi"))
         p_str = str(self.store.getConvertedVal("altitude")) + self.store.get_setting("measurement_unit")
         self.store.rollingLog.add_entry((temp_str, p_str, a_str))
+        
+        self.headerMomentary.start()
 
     def on_short_next(self):
         pass
@@ -198,6 +202,8 @@ class DashboardPage(Page):
         self.temp_box.update(self.store)
         self.alt_box.update(self.store)
         self.gas_box.update(self.store)
+        
+        self.headerMomentary.checkForUpdate()
 
     def data_schedule_update(self):
         pass

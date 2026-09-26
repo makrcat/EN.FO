@@ -116,6 +116,8 @@ class AQIPage(Page):
         self.graph_range = 15
         self.graph = DataGraph(xpos=14, ypos=132, width=122, height=90, group=self.group)
         
+        self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 1)
+        
     def on_show(self):
         self.store.set_active_metric("aqi", self.graph_range)
 
@@ -130,6 +132,8 @@ class AQIPage(Page):
     def on_long_select(self):
         p_str = str(self.store.getConvertedVal("aqi"))
         self.store.rollingLog.add_entry(("-", "-", p_str))
+        
+        self.headerMomentary.start()
 
     def on_short_next(self):
         pass 
@@ -140,6 +144,8 @@ class AQIPage(Page):
         self.description_box.update(self.store)
         
         gc.collect()
+        
+        self.headerMomentary.checkForUpdate()
             
     def data_schedule_update(self):
         readings = self.store.getVariableData()

@@ -5,7 +5,6 @@ from fonts import NINE_BOLD
 class Page():
     def __init__(self, header_text=""):
         self.group = displayio.Group(x=0, y=0)
-        self.in_select_mode = False
 
         self.header_label = label.Label(NINE_BOLD, text=header_text, color=0xFFFFFF, x=5, y=8)
         self.group.append(self.header_label)
