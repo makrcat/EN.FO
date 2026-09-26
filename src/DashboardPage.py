@@ -186,7 +186,10 @@ class DashboardPage(Page):
         pass
 
     def on_long_select(self):
-        self.store.addLog()
+        temp_str = str(self.store.getConvertedVal("temperature")) + self.store.get_setting("temperature_unit")
+        a_str = str(self.store.getConvertedVal("aqi"))
+        p_str = str(self.store.getConvertedVal("altitude")) + self.store.get_setting("measurement_unit")
+        self.store.rollingLog.add_entry((temp_str, p_str, a_str))
 
     def on_short_next(self):
         pass

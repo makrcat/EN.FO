@@ -169,7 +169,8 @@ class TemperaturePage(Page):
         self.store.resize_active_reading(self.graph_range)
 
     def on_long_select(self):
-        self.store.rollingLog.add_entry(("temp", "-", "-"))
+        temp_str = str(self.store.getConvertedVal("temperature")) + self.store.get_setting("temperature_unit")
+        self.store.rollingLog.add_entry((temp_str, "-", "-"))
 
     def on_short_next(self):
         pass 

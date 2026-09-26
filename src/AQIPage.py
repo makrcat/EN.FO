@@ -128,7 +128,8 @@ class AQIPage(Page):
         self.store.resize_active_reading(self.graph_range)
 
     def on_long_select(self):
-        pass
+        p_str = str(self.store.getConvertedVal("aqi"))
+        self.store.rollingLog.add_entry(("-", "-", p_str))
 
     def on_short_next(self):
         pass 

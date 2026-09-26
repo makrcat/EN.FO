@@ -4,7 +4,6 @@ from fonts import NINE_BOLD
 
 class Page():
     def __init__(self, header_text=""):
-        self.header_text = header_text
         self.group = displayio.Group(x=0, y=0)
         self.in_select_mode = False
 

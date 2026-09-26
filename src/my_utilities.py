@@ -7,6 +7,7 @@ import json
 
 import math
 
+
 DATA_RANGE = [15, 30]
 
 def wrap_text(text, width, font):
@@ -21,13 +22,17 @@ def wrap_pos(text, a, b):
     return b
 
 class RollingLog:
-    def __init__(self, cols, max_len=5):
+    def __init__(self, cols, max_len=9):
         self.max_len = max_len
         self.cols = cols
         self.log = []
+        
+        self.load_log()
                 
     def clear_log(self):
         self.log = []
+        
+        self.save_log()
 
     def add_entry(self, entry_tuple: tuple):
         if len(entry_tuple) != self.cols:
@@ -35,6 +40,8 @@ class RollingLog:
         if len(self.log) >= self.max_len:
             self.log.pop(0)
         self.log.append(entry_tuple)
+        
+        self.save_log()
 
     def get_row(self, index: int):
         return self.log[index]
@@ -47,6 +54,31 @@ class RollingLog:
    
     def getCols(self):
         return self.cols
+    
+    
+    def save_log(self, filename="./logger.json"):
+        try:
+            with open(filename, "w") as f:
+                json.dump(self.log, f)
+            print("Logger successfully saved to JSON.")
+            
+        except Exception as e:
+            print("Error saving logger:", e)
+            
+            
+    
+    def load_log(self, filename="./logger.json"):
+        try:
+            with open(filename, "r") as f:
+                log = json.load(f)
+                
+                for line in log:
+                    self.log.append(line)
+                        
+                print("Logger successfully loaded from JSON.")
+            
+        except Exception as e:
+            print(f"Error or no logger found ({e})")
 
 
 class Reading:
@@ -118,7 +150,7 @@ class DataStore:
         
         self.rollingLog = RollingLog(3, 5)
         
-    def save_settings(self, filename="/settings.json"):
+    def save_settings(self, filename="./settings.json"):
         try:
             with open(filename, "w") as f:
                 json.dump(self.settings, f)
@@ -127,7 +159,7 @@ class DataStore:
         except Exception as e:
             print("Error saving settings:", e)
           
-    def load_settings(self, filename="/settings.json"):
+    def load_settings(self, filename="./settings.json"):
         try:
             with open(filename, "r") as f:
                 saved_settings = json.load(f)

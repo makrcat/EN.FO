@@ -155,7 +155,8 @@ class PressurePage(Page):
         self.store.resize_active_reading(self.graph_range)
 
     def on_long_select(self):
-        pass
+        p_str = str(self.store.getConvertedVal("altitude")) + self.store.get_setting("measurement_unit")
+        self.store.rollingLog.add_entry(("-", p_str, "-"))
 
     def on_short_next(self):
         pass
