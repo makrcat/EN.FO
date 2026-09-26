@@ -2,6 +2,7 @@ import displayio
 from Page import Page
 from adafruit_display_text import label
 from fonts import NINE, NINE_BOLD
+from theme import LOGGER_BOX_BITMAP, BOX_PALETTE
 
 class LogArea(displayio.Group):
     def __init__(self, x, y):
@@ -15,7 +16,7 @@ class LogArea(displayio.Group):
             text=header_text, 
             color=0xFFFF00,
             anchor_point=(0.0, 0.0), 
-            anchored_position=(0, 0), 
+            anchored_position=(4, 2), 
             line_spacing=1.2,
             scale=1
         )
@@ -24,10 +25,16 @@ class LogArea(displayio.Group):
             text="...", 
             color=0xFFFFFF, 
             anchor_point=(0.0, 0.0), 
-            anchored_position=(0, 20), 
+            anchored_position=(4, 28), 
             line_spacing=1.2,
             scale=1
         )
+        
+        
+        self.bg_grid = displayio.TileGrid(LOGGER_BOX_BITMAP, pixel_shader=BOX_PALETTE)
+        self.append(self.bg_grid)
+  
+
         self.append(self.log_label)
         self.append(self.header)
                 
@@ -47,10 +54,10 @@ class LogArea(displayio.Group):
 
 class LoggerPage(Page):
     def __init__(self, store):
-        super().__init__(header_text="Data Logger")
+        super().__init__(header_text="Data Log")
         self.store = store
         
-        self.log_box = LogArea(x=30, y=30)
+        self.log_box = LogArea(x=25, y=40)
         self.log_box.render(self.store)
         self.group.append(self.log_box)
         

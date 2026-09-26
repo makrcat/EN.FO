@@ -111,7 +111,7 @@ class IntervalGroup(displayio.Group):
             anchor_point=(0.0, 0.0),  anchored_position=(0, 0)))
         
         self.tens = NumberSelector(x=180, y=0, width=14, height=20, parent=self)
-        self.ones = NumberSelector(x=195, y=0, width=14, height=20, parent=self)
+        self.ones = NumberSelector(x=195, y=0, width=14, height=20, parent=self, min=1)
         
         self.append(self.tens)
         self.append(self.ones)
