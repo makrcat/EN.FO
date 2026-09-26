@@ -169,7 +169,7 @@ class TemperaturePage(Page):
         self.store.resize_active_reading(self.graph_range)
 
     def on_long_select(self):
-        pass
+        self.store.rollingLog.add_entry(("temp", "-", "-"))
 
     def on_short_next(self):
         pass 

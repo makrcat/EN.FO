@@ -20,31 +20,33 @@ def wrap_pos(text, a, b):
         return a
     return b
 
-# class RollingLog:
-#     def __init__(self, cols, header: tuple, max_len=5):
-#         self.max_len = max_len
-#         self.cols = cols
-#         self.log = []
-#         self.header = header
-#
-#     def add_entry(self, entry_tuple: tuple):
-#         if len(entry_tuple) != self.cols:
-#             return
-#         if len(self.log) >= self.max_len:
-#             self.log.pop(0)
-#         self.log.append(entry_tuple)
-#
-#     def get_row(self, index: int):
-#         return self.log[index]
-#         
-#     def len(self):
-#         return len(self.log)
-#    
-#     def getRows(self):
-#         return self.max_len
-#    
-#     def getCols(self):
-#         return self.cols
+class RollingLog:
+    def __init__(self, cols, max_len=5):
+        self.max_len = max_len
+        self.cols = cols
+        self.log = []
+                
+    def clear_log(self):
+        self.log = []
+
+    def add_entry(self, entry_tuple: tuple):
+        if len(entry_tuple) != self.cols:
+            return
+        if len(self.log) >= self.max_len:
+            self.log.pop(0)
+        self.log.append(entry_tuple)
+
+    def get_row(self, index: int):
+        return self.log[index]
+        
+    def len(self):
+        return len(self.log)
+   
+    def getRows(self):
+        return self.max_len
+   
+    def getCols(self):
+        return self.cols
 
 
 class Reading:
@@ -114,7 +116,7 @@ class DataStore:
             "interval": 3.0,
         }
         
-        # self.rollingLog = RollingLog(3, ("temp", "alt", "aqi"))
+        self.rollingLog = RollingLog(3, 5)
         
     def save_settings(self, filename="/settings.json"):
         try:
@@ -138,19 +140,7 @@ class DataStore:
           
         except Exception as e:
             print(f"Error or no settings found ({e}), using defaults.")
-              
-    # def logger_add(self, tple):
-    #     self.rollingLog.add_entry(tple)
-    #     
-    # def logger_get_row(self, r):
-    #     self.rollingLog.get_row(r)
-    #     
-    # def addLog(self):
-    #     temp = self.getConvertedVal("temperature")
-    #     hu = self.getVal("humidity")
-    #     alt = self.getConvertedVal("altitude")
-    #     tstuff = f"t:{temp}\nhu:{hu:.1f}"
-    #     self.logger_add((tstuff, "hi", "hi"))
+        
         
     def set_sea_level(self, val):
         self.sensor.sea_level_pressure = int(val)

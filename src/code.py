@@ -13,6 +13,7 @@ from TemperaturePage import TemperaturePage
 from PressurePage import PressurePage
 from AQIPage import AQIPage
 from SettingsPage import SettingsPage
+from LoggerPage import LoggerPage
 from battery import Battery
 
 time.sleep(1.0) 
@@ -29,7 +30,7 @@ select_button = None
 battery_pin = None
 
 
-COMPUTER = False
+COMPUTER = True
 
 
 if COMPUTER:
@@ -89,8 +90,9 @@ else:
 
 
 def get_voltage():
-    global battery_pin
-    print("battery pin value:", battery_pin.value)
+    global battery_pin, COMPUTER
+    
+    if not COMPUTER: print("battery pin value:", battery_pin.value)
     if not COMPUTER:
         pv = battery_pin.value / 65535 * 3.7
         return pv * 2.0
@@ -137,6 +139,7 @@ PAGE_CLASSES = [
     TemperaturePage,
     PressurePage,
     AQIPage,
+    LoggerPage,
     SettingsPage,
 ]
 
@@ -293,7 +296,7 @@ while True:
         #print("Free RAM:", gc.mem_free(), "bytes")
         gc.collect()
         last_gc_time = now
-        print(gc.mem_free(), gc.mem_alloc())
+        #print(gc.mem_free(), gc.mem_alloc())
     
 
     if now - last_sensor_read >= data_store.get_setting("interval"):
