@@ -37,9 +37,11 @@ class TempBox(displayio.Group):
         
         # Axis labels
         self.temp_top_label = label.Label(terminalio.FONT, text='x', color=0xFFFFFF, anchor_point = (0.5, 0.5),
-                                          anchored_position=(5, -6), scale=1)
+                                          anchored_position=(7, -6), scale=1)
         self.append(self.temp_top_label)
-        self.append(label.Label(terminalio.FONT, text='0', color=0xFFFFFF, x=4, y=76, scale=1))
+        self.temp_bottom_label = label.Label(terminalio.FONT, text='0', color=0xFFFFFF,  anchor_point = (0.5, 0.5),
+                                          anchored_position=(7, 76), scale=1)
+        self.append(self.temp_bottom_label)
         
         self.last_temp_unit = None
 
@@ -49,11 +51,13 @@ class TempBox(displayio.Group):
         self.temp_label.text = f"{temp_con:.1f}"+ temp_unit
         self.hum_label.text = f"{store.getVal("humidity"):.1f}% hu"
         
-        max = 100 if temp_unit == 'F' else 40
-        self.gradient.update(temp_con / max)
+        max = 100 if temp_unit == 'F' else (37.8 if temp_unit == 'C' else 310.95)
+        min = 32 if temp_unit == 'F' else (0 if temp_unit == 'C' else 273.15)
+        self.gradient.update((temp_con - min) / (max - min))
         
         if self.last_temp_unit != temp_unit:
             self.temp_top_label.text = str(max)
+            self.temp_bottom_label.text = str(min)
             self.last_temp_unit = temp_unit
 
 class GasBox(displayio.Group):
@@ -178,7 +182,7 @@ class DashboardPage(Page):
         self.group.append(self.gas_box)
         self.group.append(self.last_box)
         
-        self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 1)
+        self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 0.5)
    
 
     def on_show(self):

@@ -116,7 +116,7 @@ class AQIPage(Page):
         self.graph_range = 15
         self.graph = DataGraph(xpos=14, ypos=132, width=122, height=90, group=self.group)
         
-        self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 1)
+        self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 0.5)
         
     def on_show(self):
         self.store.set_active_metric("aqi", self.graph_range)

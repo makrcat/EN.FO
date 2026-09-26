@@ -273,7 +273,12 @@ class DataStore:
         elif metric in ['temperature', 'feels_like', 'dewpoint', 'boiling_point']:
             if self.settings["temperature_unit"] == "F":
                 return round(val * 9/5 + 32, 1)
-            return round(val, 1)
+            elif self.settings["temperature_unit"] == "C":
+                return round(val, 1)
+            
+            return round(val + 273.15, 1)
+                
+                
         return val
 
     def update(self) -> None:
