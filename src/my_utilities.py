@@ -176,6 +176,11 @@ class DataStore:
         
         self.rollingLog = RollingLog(3, 5)
         
+        self.custom = {
+            "baseline_gas_resistance": 300000,
+            "baseline_humidity": 40
+        }
+        
     def save_settings(self, filename="./settings.json"):
         try:
             with open(filename, "w") as f:
@@ -226,7 +231,40 @@ class DataStore:
         return round(apparent_temp_c, 1)
     
     def getAQI(self) -> int:
-        return 5
+        current_humidity = self.latest_values["humidity"]
+        current_gas = self.latest_values["gas_resistance"]
+        
+        HREF = self.custom["baseline_humidity"]
+        GREF = self.custom["baseline_gas_resistance"]
+                    
+        # uninitialized
+        if current_gas <= 0:
+            return 0
+        
+        # cleaner air exists, use diff constant next time
+        if current_gas > GREF:
+            GREF = current_gas
+            
+            
+        humidity_error = current_humidity - HREF
+        if humidity_error > 0:
+            # humidity penalty
+            humidity_score = (100.0 - current_humidity) / (100.0 - HREF)
+        else:
+            # is drier penalty
+            humidity_score = current_humidity / HREF
+
+
+        humidity_score = max(0.0, min(1.0, humidity_score)) * 0.25
+        
+        gas_score = (current_gas / GREF) * 0.75
+        gas_score = max(0.0, min(0.75, gas_score))
+        
+        aqi_score = humidity_score + gas_score
+        aqi = (1.0 - aqi_score) * 500.0
+        
+        return int(round(aqi))
+        
 
     def geteCO2(self) -> int:
         return 5000

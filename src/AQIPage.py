@@ -37,18 +37,44 @@ class AQIArea(displayio.Group):
 
 
 def aqi_cat(aqi):
-    if aqi > 300: return 4
-    elif aqi > 200: return 3
-    elif aqi > 150: return 2
-    elif aqi > 100: return 1
-    else: return 0
+    if aqi <= 50:
+        return 0  # Good
+    elif aqi <= 100:
+        return 1  # Moderate
+    elif aqi <= 150:
+        return 2  # Unhealthy for Sensitive Groups
+    elif aqi <= 200:
+        return 3  # Unhealthy
+    elif aqi <= 300:
+        return 4  # Very Unhealthy
+    else:
+        return 5  # Hazardous (301 and higher)
 
 pinfo = [
-    ("Good AQI", "Air quality is pretty good!"),
-    ("Moderate", "Air quality is okay; some people might be sensitive."),
-    ("Unhealthy+", "Members of sensitive groups may experience health effects."),
-    ("Very bad", "Wear a mask! Everyone is likely to experience effects."),
-    ("Terrible", "Pretty catastrophic air quality, don't go outside.")
+    (
+        "Good", 
+        "Air quality is pretty good! What a nice day."
+    ),
+    (
+        "Moderate", 
+        "Air quality is generally decent, perhaps average."
+    ),
+    (
+        "Sort of okay", 
+        "Air quality is okay, although some people might be sensitive."
+    ),
+    (
+        "Unhealthy", 
+        "Some people may experience health effects more than others."
+    ),
+    (
+        "Hazardous", 
+        "Be careful! Everyone is likely to experience effects of bad air."
+    ),
+    (
+        "Catastrophic", 
+        "The air is terrible, what's happening? Make sure to wear a mask!"
+    )
 ]
 
 

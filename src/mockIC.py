@@ -4,10 +4,10 @@ import random
 class MockBME680:
     def __init__(self):
         self._temp = 24.5
-        self._hum = 50.0
+        self._hum = 40.0
         self._press = 942
         self._alt = 200.0
-        self._gas = 25
+        self._gas = 200000
 
     @property
     def temperature(self):
