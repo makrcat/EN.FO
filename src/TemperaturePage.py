@@ -13,9 +13,9 @@ class HumidityBox(displayio.Group):
         self.bg_grid = displayio.TileGrid(SMALL_BOX_BITMAP, pixel_shader=BOX_PALETTE)
         self.append(self.bg_grid)
         
-        self.append(label.Label(NINE, text="Humid:", color=0x52E5FF, anchor_point=(0.0, 0.0), anchored_position=(4, 0), scale=1))
+        self.append(label.Label(NINE, text="Humid:", color=0x52E5FF, anchor_point=(0.0, 0.0), anchored_position=(4, 2), scale=1))
         
-        self.hum_label = label.Label(NINE, text="--%", color=0x52E5FF, anchor_point=(0.0, 0.0), anchored_position=(4, 16), scale=1)
+        self.hum_label = label.Label(NINE, text="--%", color=0x52E5FF, anchor_point=(0.0, 0.0), anchored_position=(4, 18), scale=1)
         self.append(self.hum_label)
 
     def update(self, store):
@@ -28,9 +28,9 @@ class DewBox(displayio.Group):
         self.bg_grid = displayio.TileGrid(SMALL_BOX_BITMAP, pixel_shader=BOX_PALETTE)
         self.append(self.bg_grid)
         
-        self.append(label.Label(NINE, text="Dew pt:", color=0xA8FFA3, anchor_point=(0.0, 0.0), anchored_position=(4, 0), scale=1))
+        self.append(label.Label(NINE, text="Dew pt:", color=0xA8FFA3, anchor_point=(0.0, 0.0), anchored_position=(4, 2), scale=1))
         
-        self.dew_label = label.Label(NINE, text="--C", color=0xA8FFA3, anchor_point=(0.0, 0.0), anchored_position=(4, 16), scale=1)
+        self.dew_label = label.Label(NINE, text="--C", color=0xA8FFA3, anchor_point=(0.0, 0.0), anchored_position=(4, 18), scale=1)
         self.append(self.dew_label)
 
     def update(self, store):
@@ -44,9 +44,9 @@ class FLBox(displayio.Group):
         self.append(self.bg_grid)
                 
                 
-        self.append(label.Label(NINE, text="Feels:", color=0xFF7DE5, anchor_point=(0.0, 0.0), anchored_position=(4, 0), scale=1))
+        self.append(label.Label(NINE, text="Feels:", color=0xFF7DE5, anchor_point=(0.0, 0.0), anchored_position=(4, 2), scale=1))
         
-        self.FL_label = label.Label(NINE, text="--C", color=0xFF7DE5, anchor_point=(0.0, 0.0), anchored_position=(4, 16), scale=1)
+        self.FL_label = label.Label(NINE, text="--C", color=0xFF7DE5, anchor_point=(0.0, 0.0), anchored_position=(4, 18), scale=1)
         self.append(self.FL_label)
 
     def update(self, store):

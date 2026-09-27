@@ -177,7 +177,7 @@ class DataStore:
         self.rollingLog = RollingLog(3, 5)
         
         self.custom = {
-            "baseline_gas_resistance": 300000,
+            "baseline_gas_resistance": 147500,
             "baseline_humidity": 40
         }
         
@@ -233,6 +233,7 @@ class DataStore:
     def getAQI(self) -> int:
         current_humidity = self.latest_values["humidity"]
         current_gas = self.latest_values["gas_resistance"]
+        # print(current_gas)
         
         HREF = self.custom["baseline_humidity"]
         GREF = self.custom["baseline_gas_resistance"]
@@ -594,7 +595,10 @@ class tempGradientObject:
                 self.bitmap[0, y] = color_index
 
     def update(self, pc):
-        self.value = int(pc * self.height)
+        if self.orientation == "horizontal": 
+            self.value = int(pc * self.width)
+        else:
+            self.value = int(pc * self.height)
         
         color_list = self.outputHEXfrom()
         for i in range(len(color_list)):

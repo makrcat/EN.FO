@@ -3,25 +3,73 @@ from my_utilities import *
 from Page import Page
 from adafruit_display_text import label
 from fonts import NINE, SUBTEN, PRAGATI_54, NINE_BOLD
-from theme import SMALL_BOX_BITMAP, DESC_BOX_BITMAP, BOX_PALETTE
+from theme import SMALL_BOX_BITMAP, TX_BOX_BITMAP, DESC_BOX_BITMAP, BOX_PALETTE
+from adafruit_display_shapes.rect import Rect
 import gc
+import math
 
-class eCO2(displayio.Group):
+STABALIZE_TIME = 1200
+class GasOhmsBox(displayio.Group):
     def __init__(self, x, y):
         super().__init__(x=x, y=y)
 
         self.bg_grid = displayio.TileGrid(SMALL_BOX_BITMAP, pixel_shader=BOX_PALETTE)
         self.append(self.bg_grid)
                 
-        self.append(label.Label(NINE, text="eCO2", color=0x52E5FF, anchor_point=(0.0, 0.0), 
-                                     anchored_position=(4, 0), scale=1))
+        self.append(label.Label(NINE, text="resistn", color=0xffdf52, anchor_point=(0.0, 0.0), 
+                                     anchored_position=(4, 2), scale=1))
         
-        self.eCO2_label = label.Label(NINE, text="--", color=0x52E5FF, anchor_point=(0.0, 0.0), 
-                                     anchored_position=(4, 16), scale=1)
-        self.append(self.eCO2_label)
+        self.gas_ohms_label = label.Label(NINE, text="--", color=0xffdf52, anchor_point=(0.0, 0.0), 
+                                     anchored_position=(4, 18), scale=1)
+        self.append(self.gas_ohms_label)
 
     def update(self, store):
-        self.eCO2_label.text = f"{store.getVal('eCO2'):.0f}"
+        self.gas_ohms_label.text = f"{(store.getVal("gas_resistance")/100):.0f}K"
+        
+class ConfidenceBox(displayio.Group):
+    def __init__(self, x, y):
+        super().__init__(x=x, y=y)
+
+        self.bg_grid = displayio.TileGrid(TX_BOX_BITMAP, pixel_shader=BOX_PALETTE)
+        self.append(self.bg_grid)
+                
+        self.append(label.Label(NINE, text="confidence", color=0xFFFFFF, anchor_point=(0.0, 0.0), 
+                                     anchored_position=(4, 2), scale=1))   
+        
+        self.gradient = tempGradientObject(
+                    xpos=6, ypos=27, width=100, height=7,pc=0.0, group=self, 
+                    colorz=[0xb1d726, 0x4fd726, 0x26d767], 
+                    orientation='horizontal'
+        )
+        
+        self.percentage = label.Label(terminalio.FONT, text="x%", color=0xFFFFFF, anchor_point=(0.0, 0.0), 
+                                             anchored_position=(110, 23), scale=1)
+        self.append(self.percentage) 
+        
+        self.elapsed_time = label.Label(terminalio.FONT, text="x/x", color=0xFFFFFF, anchor_point=(1.0, 0.0), 
+                                                     anchored_position=(141, -16), scale=1)
+        self.append(self.elapsed_time) 
+        
+        self.append(Rect(
+            x=self.gradient.xpos - 1,
+            y=self.gradient.ypos - 1,
+            width=self.gradient.width + 2,
+            height=self.gradient.height + 2,
+            fill=None,
+            outline=0xFFFFFF
+        ))
+        
+
+
+    def updateConfidence(self, percent):     
+        self.gradient.update(percent)
+        self.percentage.text = f"{int(percent * 100)}%"
+        
+    def updateElapsedTime(self, seconds):
+        self.elapsed_time.text = f"{seconds}/{STABALIZE_TIME}sec"
+        
+    
+
 
 
 class AQIArea(displayio.Group):
@@ -57,10 +105,10 @@ pinfo = [
     ),
     (
         "Moderate", 
-        "Air quality is generally decent, perhaps average."
+        "Air quality is generally fine, perhaps average."
     ),
     (
-        "Sort of okay", 
+        "Okayish", 
         "Air quality is okay, although some people might be sensitive."
     ),
     (
@@ -69,14 +117,30 @@ pinfo = [
     ),
     (
         "Hazardous", 
-        "Be careful! Everyone is likely to experience effects of bad air."
+        "Be careful. Everyone is likely to experience effects of bad air."
     ),
     (
-        "Catastrophic", 
-        "The air is terrible, what's happening? Make sure to wear a mask!"
+        "Terrible", 
+        "The air is catastrophic, what's happening? Make sure to wear a mask!"
     )
 ]
 
+def confidenceBasedOnElapsed(elapsed):
+    """
+    Calculates sensor reliability (0.0 to 1.0) based on elapsed time in seconds.
+    The BME680 takes roughly 20-30 minutes (1200-1800 seconds) to fully stabilize.
+    """
+
+    if elapsed <= 0:
+        return 0.0
+    elif elapsed >= STABALIZE_TIME:
+        return 1.0
+        
+    # Uses a logarithmic curve because the sensor stabilizes quickly at first, 
+    # then crawls slowly up to its final absolute baseline.
+    
+    # print(math.log(elapsed + 1) / math.log(STABALIZE_TIME + 1))
+    return math.log(elapsed + 1) / math.log(STABALIZE_TIME + 1)
 
 class DescriptionBox(displayio.Group):
     def __init__(self, x, y):
@@ -133,19 +197,25 @@ class AQIPage(Page):
         self.AQI_box = AQIArea(x=14, y=28)
         self.group.append(self.AQI_box)
         
-        self.eCO2_box = eCO2(x=14, y=84)
-        self.group.append(self.eCO2_box)
+        self.gas_ohms_box = GasOhmsBox(x=14, y=84)
+        self.group.append(self.gas_ohms_box)
                 
         self.description_box = DescriptionBox(x=142, y=132)
         self.group.append(self.description_box)
+        
+        self.confidence_box = ConfidenceBox(x=87, y=84)
+        self.group.append(self.confidence_box)
+        
         
         self.graph_range = 15
         self.graph = DataGraph(xpos=14, ypos=132, width=122, height=90, group=self.group)
         
         self.headerMomentary = MomentaryText(self.header_label, "-- Logged --", 0.5)
+        self.timeStarted = 0
         
     def on_show(self):
         self.store.set_active_metric("aqi", self.graph_range)
+        self.timeStarted = time.monotonic()
 
     def on_short_select(self):
         global DATA_RANGE
@@ -165,11 +235,16 @@ class AQIPage(Page):
         pass 
 
     def update_page(self):
-        self.eCO2_box.update(self.store)
+        self.gas_ohms_box.update(self.store)
         self.AQI_box.update(self.store)
         self.description_box.update(self.store)
         
         gc.collect()
+        
+        time_elapsed = int(time.monotonic() - self.timeStarted)
+        percent = confidenceBasedOnElapsed(time_elapsed)
+        self.confidence_box.updateConfidence(percent)
+        self.confidence_box.updateElapsedTime(time_elapsed)
         
         self.headerMomentary.checkForUpdate()
             

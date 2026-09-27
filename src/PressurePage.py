@@ -14,10 +14,10 @@ class PressureArea(displayio.Group):
         self.append(self.bg_grid)
         
         self.append(label.Label(NINE, text="Pressur", color=0xFF9952, anchor_point=(0.0, 0.0), 
-                                        anchored_position=(4, 0), scale=1))
+                                        anchored_position=(4, 2), scale=1))
         
         self.pressure_label = label.Label(NINE, text="---- hPa", color=0xFF9952, anchor_point=(0.0, 0.0), 
-                                        anchored_position=(4, 16), scale=1)
+                                        anchored_position=(4, 18), scale=1)
         self.append(self.pressure_label)
                 
     def update(self, store):
@@ -31,10 +31,10 @@ class BoilBox(displayio.Group):
         self.append(self.bg_grid)
         
         self.append(label.Label(NINE, text="Boiling", color=0x52E5FF, anchor_point=(0.0, 0.0), 
-                                                anchored_position=(4, 0), scale=1))
+                                                anchored_position=(4, 2), scale=1))
                 
         self.boil_label = label.Label(NINE, text="----", color=0x52E5FF, anchor_point=(0.0, 0.0), 
-                                        anchored_position=(4, 16), scale=1)
+                                        anchored_position=(4, 18), scale=1)
         
         self.append(self.boil_label)
 
@@ -51,10 +51,10 @@ class HILOBox(displayio.Group):
                 
                 
         self.append(label.Label(NINE, text="PsrLvl", color=0xFF7DE5, anchor_point=(0.0, 0.0), 
-                                             anchored_position=(4, 0), scale=1))
+                                             anchored_position=(4, 2), scale=1))
         
         self.HILO_label = label.Label(NINE, text="----", color=0xFF7DE5, anchor_point=(0.0, 0.0), 
-                                     anchored_position=(4, 16), scale=1)
+                                     anchored_position=(4, 18), scale=1)
         self.append(self.HILO_label)
 
     def update(self, store):

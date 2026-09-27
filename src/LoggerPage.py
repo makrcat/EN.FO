@@ -9,7 +9,7 @@ class LogArea(displayio.Group):
         super().__init__(x=x, y=y)
         
         ugh = ["temp", "alt", "aqi"]
-        header_text = "".join([u.ljust(8) for u in ugh])
+        header_text = "".join([("%-8s" % u) for u in ugh])
         
         self.header = label.Label(
             NINE_BOLD, 
@@ -45,7 +45,7 @@ class LogArea(displayio.Group):
             this_line = ""
             
             for data in row_data:
-                this_line += data.ljust(8)
+                this_line += "%-8s" % data
                 
             log_lines += this_line + "\n"
                 

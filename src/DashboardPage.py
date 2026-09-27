@@ -2,6 +2,7 @@ import displayio, terminalio
 from my_utilities import *
 from Page import Page
 from adafruit_display_shapes.rect import Rect
+from adafruit_display_shapes.triangle import Triangle
 from adafruit_display_text import label
 from fonts import PRAGATI_22, PRAGATI_42
 
@@ -76,7 +77,7 @@ class GasBox(displayio.Group):
         )
 
         
-        self.eCO2_label = label.Label(
+        self.resistance_label = label.Label(
             PRAGATI_22, 
             text="--.-", 
             color=0xFFFFFF, 
@@ -86,7 +87,7 @@ class GasBox(displayio.Group):
         )
 
         self.append(self.aqi_label)
-        self.append(self.eCO2_label)
+        self.append(self.resistance_label)
 
         self.gradient = tempGradientObject(
             xpos=4, ypos=78, width=100, height=7,pc=1.0, group=self, 
@@ -94,11 +95,24 @@ class GasBox(displayio.Group):
             orientation='horizontal'
         )
         
+        
+        self.pointer_group = displayio.Group()
+        pointer_shape = Triangle(0, 4, -4, 0, 4, 0, fill=0xFFFFFF)
+        self.pointer_group.append(pointer_shape)
+        self.pointer_group.y = 71
+        self.pointer_group.x = 4
+        self.append(self.pointer_group)
+        
+        
         self.append(Rect(4, 78, 100, 7, outline=0xFFFFFF))
 
     def update(self, store):
-        self.aqi_label.text = f"{store.getVal("aqi"):.1f}"
-        self.eCO2_label.text = f"eCO2: {store.getVal("eCO2"):.0f}"
+        aqi = store.getVal("aqi")
+        self.aqi_label.text = f"{aqi:.1f}"
+        self.resistance_label.text = f"rst: {(store.getVal("gas_resistance")/100):.0f}K"
+        
+        constrained_aqi = max(0.0, min(aqi, 500.0))
+        self.pointer_group.x = 4 + int((constrained_aqi / 500.0) * 100)
         
 
 class AltBox(displayio.Group):

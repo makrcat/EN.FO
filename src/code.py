@@ -17,7 +17,6 @@ from LoggerPage import LoggerPage
 from battery import Battery
 
 time.sleep(1.0) 
-
 import gc
 gc.collect()
 
@@ -92,7 +91,6 @@ else:
 def get_voltage():
     global battery_pin, COMPUTER
     
-    if not COMPUTER: print("battery pin value:", battery_pin.value)
     if not COMPUTER:
         pv = battery_pin.value / 65535 * 3.7
         return pv * 2.0
@@ -143,7 +141,7 @@ PAGE_CLASSES = [
     SettingsPage,
 ]
 
-page_index = 0
+page_index = 3
 current_page_instance = None
 
 def show_page(idx):
