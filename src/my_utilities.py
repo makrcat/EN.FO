@@ -162,6 +162,7 @@ class DataStore:
         self.sensor = sensor
         self.active_metric = None
         self.active_reading = None
+        self.start_time = time.monotonic()
         
         self.latest_values = {
             "temperature": 0, "humidity": 0, "pressure": 0,
@@ -180,6 +181,8 @@ class DataStore:
             "baseline_gas_resistance": 147500,
             "baseline_humidity": 40
         }
+        
+        self.STABALIZE_TIME = 1250
         
     def save_settings(self, filename="./settings.json"):
         try:
@@ -292,6 +295,26 @@ class DataStore:
         a, b = 17.625, 243.04
         alpha = ((a * temp_c) / (b + temp_c)) + math.log(rh / 100.0)
         return (b * alpha) / (a - alpha)
+    
+    def getConfidence(self):
+            
+        """
+        Calculates sensor reliability (0.0 to 1.0) based on elapsed time in seconds.
+        The BME680 takes roughly 20-30 minutes (1200-1800 seconds) to fully stabilize.
+        """
+        
+        elapsed = time.monotonic() - self.start_time
+
+        if elapsed <= 0:
+            return 0.0
+        elif elapsed >= self.STABALIZE_TIME:
+            return 1.0
+            
+        # Uses a logarithmic curve because the sensor stabilizes quickly at first, 
+        # then crawls slowly up to its final absolute baseline.
+        
+        # print(math.log(elapsed + 1) / math.log(STABALIZE_TIME + 1))
+        return math.log(elapsed + 1) / math.log(self.STABALIZE_TIME + 1)
         
     def getVal(self, metric):
         if metric in self.latest_values:
@@ -302,6 +325,7 @@ class DataStore:
         elif metric == 'boiling_point': return self.getBoilingPoint()
         elif metric == 'feels_like': return self.getFL()
         elif metric == 'pressure_category': return self.getPressCat()
+        elif metric == 'confidence': return self.getConfidence()
 
     def getConvertedVal(self, metric) -> str:
         val = self.getVal(metric)

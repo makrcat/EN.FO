@@ -109,7 +109,7 @@ class GasBox(displayio.Group):
     def update(self, store):
         aqi = store.getVal("aqi")
         self.aqi_label.text = f"{aqi:.1f}"
-        self.resistance_label.text = f"rst: {(store.getVal("gas_resistance")/100):.0f}K"
+        self.resistance_label.text = f"rst: {(store.getVal("gas_resistance")/1000):.0f}K"
         
         constrained_aqi = max(0.0, min(aqi, 500.0))
         self.pointer_group.x = 4 + int((constrained_aqi / 500.0) * 100)

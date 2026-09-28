@@ -14,6 +14,7 @@ from PressurePage import PressurePage
 from AQIPage import AQIPage
 from SettingsPage import SettingsPage
 from LoggerPage import LoggerPage
+from SnakePage import SnakePage
 from battery import Battery
 
 time.sleep(1.0) 
@@ -139,37 +140,44 @@ PAGE_CLASSES = [
     AQIPage,
     LoggerPage,
     SettingsPage,
+    SnakePage
 ]
 
-page_index = 3
-current_page_instance = None
+page_index = 6
+current_page = None
+SELECT_DOWN_ON_PRESS = False
 
 def show_page(idx):
-    global current_page_instance
-    
-    # check if settings page
-    
-    if current_page_instance is not None:
-        if type(current_page_instance).__name__ == "SettingsPage":
-            if current_page_instance.needs_write_update():
+    global current_page, SELECT_DOWN_ON_PRESS
+
+    # save settings if leaving settingspage
+    if current_page is not None:
+        if type(current_page).__name__ == "SettingsPage":
+            if current_page.needs_write_update():
                 data_store.save_settings()
-    
-    # continue
-    
+
+    # clear old page
     while len(content_group) > 0:
         content_group.pop()
-        
-    current_page_instance = None
-    gc.collect() 
 
-    current_page_instance = PAGE_CLASSES[idx](data_store)
-    
-    current_page_instance.on_show()
-    content_group.append(current_page_instance.group)
-    current_page_instance.update_page()
-    
+    current_page = None
     gc.collect()
-    
+
+    # create new page
+    current_page = PAGE_CLASSES[idx](data_store)
+
+    # select behavior depends on the NEW page
+    SELECT_DOWN_ON_PRESS = type(current_page).__name__ == "SnakePage"
+
+    current_page.on_show()
+    content_group.append(current_page.group)
+
+    if not current_page.ignore_sensor:
+        current_page.update_page()
+
+    display.refresh()
+    gc.collect()
+
     
 
 def pagers():
@@ -197,6 +205,7 @@ last_sensor_read = 0 # bug fixed
 next_button_pressed_last = False
 select_button_pressed_last = False
 SMODE = False
+
 NMODE = False
 L_SMODE = False
 select_time_start_down = 0
@@ -206,6 +215,7 @@ long_thresh = 2.5
 def handle_buttons_modes():
     global next_button_pressed_last, select_button_pressed_last
     global NMODE, SMODE, L_SMODE, select_time_start_down, long_thresh, long_press_fired
+    global SELECT_DOWN_ON_PRESS
     
     next_button_pressed = not next_button.value
     select_button_pressed = not select_button.value
@@ -214,9 +224,10 @@ def handle_buttons_modes():
     SMODE = False
     L_SMODE = False
     
-    if select_button_pressed and not select_button_pressed_last: # JUST PRESSED
+    if select_button_pressed and not select_button_pressed_last: 
         select_time_start_down = time.monotonic()
         long_press_fired = False
+        SMODE = True
         
     elif select_button_pressed:
         if (not long_press_fired) and time.monotonic() - select_time_start_down >= long_thresh:
@@ -256,9 +267,11 @@ def handle_buttons_modes_computer():
     select_button_pressed = keys[pygame.K_s] or keys[pygame.K_RETURN]
 
 
-    if select_button_pressed and not select_button_pressed_last:
+    if select_button_pressed and not select_button_pressed_last: 
         select_time_start_down = time.monotonic()
         long_press_fired = False
+        if SELECT_DOWN_ON_PRESS:
+            SMODE = True
         
     elif select_button_pressed:
         if (not long_press_fired) and time.monotonic() - select_time_start_down >= long_thresh:
@@ -267,7 +280,9 @@ def handle_buttons_modes_computer():
             
     elif (select_button_pressed_last and not select_button_pressed 
           and time.monotonic() - select_time_start_down < long_thresh):
-        SMODE = True
+        
+        if not SELECT_DOWN_ON_PRESS: # select if it is after press
+            SMODE = True
         
 
     if next_button_pressed and not next_button_pressed_last:
@@ -295,30 +310,34 @@ while True:
         gc.collect()
         last_gc_time = now
         #print(gc.mem_free(), gc.mem_alloc())
-    
+        
+    if current_page.otherIdleUpdates:
+        upd = current_page.should_update()
 
     if now - last_sensor_read >= data_store.get_setting("interval"):
         data_store.update()
         
         last_sensor_read = now
-        current_page_instance.data_schedule_update()
-        upd = True
+        if not current_page.ignore_sensor:
+            current_page.data_schedule_update()
+            upd = True
 
     if NMODE:
-        if current_page_instance.on_short_next() != False:
+        if current_page.on_short_next() != False:
             pagers()
-        upd = True
+        else:
+            upd = True
 
     elif SMODE:
-        current_page_instance.on_short_select()
+        current_page.on_short_select()
         upd = True
 
     elif L_SMODE:
-        current_page_instance.on_long_select()
+        current_page.on_long_select()
         upd = True
 
     if upd:
-        current_page_instance.update_page()
+        current_page.update_page()
         upd = False
         
         battery_widget.update(get_voltage())

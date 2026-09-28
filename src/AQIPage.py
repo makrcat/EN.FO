@@ -24,7 +24,7 @@ class GasOhmsBox(displayio.Group):
         self.append(self.gas_ohms_label)
 
     def update(self, store):
-        self.gas_ohms_label.text = f"{(store.getVal("gas_resistance")/100):.0f}K"
+        self.gas_ohms_label.text = f"{(store.getVal("gas_resistance")/1000):.0f}K"
         
 class ConfidenceBox(displayio.Group):
     def __init__(self, x, y):
@@ -37,7 +37,7 @@ class ConfidenceBox(displayio.Group):
                                      anchored_position=(4, 2), scale=1))   
         
         self.gradient = tempGradientObject(
-                    xpos=6, ypos=27, width=100, height=7,pc=0.0, group=self, 
+                    xpos=6, ypos=25, width=100, height=7,pc=0.0, group=self, 
                     colorz=[0xb1d726, 0x4fd726, 0x26d767], 
                     orientation='horizontal'
         )
@@ -65,8 +65,8 @@ class ConfidenceBox(displayio.Group):
         self.gradient.update(percent)
         self.percentage.text = f"{int(percent * 100)}%"
         
-    def updateElapsedTime(self, seconds):
-        self.elapsed_time.text = f"{seconds}/{STABALIZE_TIME}sec"
+    def updateElapsedTime(self, seconds, store):
+        self.elapsed_time.text = f"{seconds}/{store.STABALIZE_TIME}sec"
         
     
 
@@ -124,23 +124,6 @@ pinfo = [
         "The air is catastrophic, what's happening? Make sure to wear a mask!"
     )
 ]
-
-def confidenceBasedOnElapsed(elapsed):
-    """
-    Calculates sensor reliability (0.0 to 1.0) based on elapsed time in seconds.
-    The BME680 takes roughly 20-30 minutes (1200-1800 seconds) to fully stabilize.
-    """
-
-    if elapsed <= 0:
-        return 0.0
-    elif elapsed >= STABALIZE_TIME:
-        return 1.0
-        
-    # Uses a logarithmic curve because the sensor stabilizes quickly at first, 
-    # then crawls slowly up to its final absolute baseline.
-    
-    # print(math.log(elapsed + 1) / math.log(STABALIZE_TIME + 1))
-    return math.log(elapsed + 1) / math.log(STABALIZE_TIME + 1)
 
 class DescriptionBox(displayio.Group):
     def __init__(self, x, y):
@@ -240,11 +223,12 @@ class AQIPage(Page):
         self.description_box.update(self.store)
         
         gc.collect()
-        
-        time_elapsed = int(time.monotonic() - self.timeStarted)
-        percent = confidenceBasedOnElapsed(time_elapsed)
+
+        percent = self.store.getVal("confidence")
         self.confidence_box.updateConfidence(percent)
-        self.confidence_box.updateElapsedTime(time_elapsed)
+        
+        elapsed = int(time.monotonic() - self.store.start_time)
+        self.confidence_box.updateElapsedTime(elapsed, self.store)
         
         self.headerMomentary.checkForUpdate()
             

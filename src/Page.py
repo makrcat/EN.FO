@@ -5,6 +5,8 @@ from fonts import NINE_BOLD
 class Page():
     def __init__(self, header_text=""):
         self.group = displayio.Group(x=0, y=0)
+        self.otherIdleUpdates = False
+        self.ignore_sensor = False
 
         self.header_label = label.Label(NINE_BOLD, text=header_text, color=0xFFFFFF, x=5, y=8)
         self.group.append(self.header_label)
@@ -25,7 +27,10 @@ class Page():
         pass
     
     def update_page(self):
+        # stuff that should be instantaneous, when needed
+        # (imagine it runs every millisecond)
         pass
 
-    def data_schedule_update(self):
+    def data_schedule_update(self): 
+        # stuff that needs a set interval, like graphs
         pass
