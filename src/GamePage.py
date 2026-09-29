@@ -52,4 +52,3 @@ class GamePage(Page):
     def game_update_frame(self):
         pass
 
-

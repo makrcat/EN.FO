@@ -3,6 +3,7 @@ from my_utilities import *
 
 # import board, busio
 from Page import *
+from PacManPage import PacManPage
 
 
 from adafruit_display_shapes.line import Line
@@ -140,10 +141,11 @@ PAGE_CLASSES = [
     AQIPage,
     LoggerPage,
     SettingsPage,
-    SnakePage
+    SnakePage,
+    PacManPage
 ]
 
-page_index = 6
+page_index = 7
 current_page = None
 SELECT_DOWN_ON_PRESS = False
 
@@ -167,7 +169,8 @@ def show_page(idx):
     current_page = PAGE_CLASSES[idx](data_store)
 
     # select behavior depends on the NEW page
-    SELECT_DOWN_ON_PRESS = type(current_page).__name__ == "SnakePage"
+    selectDownOnPressPages = ["SnakePage", "PacManPage"]
+    SELECT_DOWN_ON_PRESS = type(current_page).__name__ in selectDownOnPressPages
 
     current_page.on_show()
     content_group.append(current_page.group)
