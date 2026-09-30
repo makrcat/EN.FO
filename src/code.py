@@ -32,7 +32,7 @@ select_button = None
 battery_pin = None
 
 
-COMPUTER = False
+COMPUTER = True
 
 
 if COMPUTER:
@@ -147,7 +147,7 @@ PAGE_CLASSES = [
     Game2048Page,
 ]
 
-page_index = 8
+page_index = 0
 current_page = None
 SELECT_DOWN_ON_PRESS = False
 
@@ -311,7 +311,7 @@ while True:
     now = time.monotonic()
 
     if now - last_gc_time > GC_INTERVAL:
-        print("Free RAM:", gc.mem_free(), "bytes")
+        #print("Free RAM:", gc.mem_free(), "bytes")
         gc.collect()
         last_gc_time = now
         #print(gc.mem_free(), gc.mem_alloc())

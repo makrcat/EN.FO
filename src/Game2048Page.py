@@ -7,21 +7,33 @@ from adafruit_display_shapes.rect import Rect
 from adafruit_display_shapes.triangle import Triangle
 import time, bitmaptools
 
+class MemoryNumber:
+    def __init__(self, number, x, y):
+        self.number = number
+        self.ix = x
+        self.iy = y
+        self.ox = x
+        self.oy = y
+
+    def update_old(self):
+        self.ox = self.ix
+        self.oy = self.iy
+
 class Game2048Page(GamePage):
     def __init__(self, store):
-        super().__init__(header="2048 Game", fps=10)
+        super().__init__(header="2048 Game", fps=30)
         
         self.width = 4
         self.height = 4
         self.store = store
-        self.scale = 40  # Size of each tile in pixels
+        self.scale = 40
         
         boardx = 40
         boardy = 50
         self.boardx = boardx
         self.boardy = boardy
     
-        # --- outline ---
+        # OUTLINE stuff for the ui
         self.outline = Rect(
             x=boardx - 1, 
             y=boardy - 1, 
@@ -32,7 +44,7 @@ class Game2048Page(GamePage):
         )
         self.group.append(self.outline)
         
-        # --- arrows (unchanged) ---
+        # ARROWS stuff
         center = displayio.Group()
         center.x = self.boardx + self.width * self.scale // 2
         center.y = self.boardy + self.height * self.scale // 2
@@ -52,9 +64,7 @@ class Game2048Page(GamePage):
 
         self.palette = displayio.Palette(14)
         
-        
-        
-        self.palette[0] = 0x111111  # 
+        self.palette[0] = 0x111111  # Background / empty
         self.palette[1] = 0xEEE4DA  # 2
         self.palette[2] = 0xEDE0C8  # 4
         self.palette[3] = 0xF2B179  # 8
@@ -66,16 +76,15 @@ class Game2048Page(GamePage):
         self.palette[9] = 0xEDC850  # 512
         self.palette[10] = 0xEDC53F # 1024
         self.palette[11] = 0xEDC22E # 2048
-        self.palette[12] = 0x111111 # light tiles
-        self.palette[13] = 0xFFFFFF # 8 + tiles
+        self.palette[12] = 0x111111 # light tiles text color
+        self.palette[13] = 0xFFFFFF # dark tiles text color
 
-        # --- tilesheet bitmap ---
+        # Create tile graphics sheet
         num_tile_types = 12
         tilesheet_width = self.scale * num_tile_types
         tilesheet_height = self.scale
         self.tilesheet = displayio.Bitmap(tilesheet_width, tilesheet_height, 14)
         
-        # all possible tile graphics
         tile_values = [0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
         for idx, val in enumerate(tile_values):
             x_offset = idx * self.scale
@@ -90,51 +99,57 @@ class Game2048Page(GamePage):
                 text_y = 26
                 self.draw_text_direct(self.tilesheet, text, NINE_BOLD, text_x, text_y, text_color)
 
-        # --- tilegrid array ---
-        self.board_group = displayio.Group(x=boardx, y=boardy)
-        self.tile_grids = [[None for _ in range(4)] for _ in range(4)]
+        # Single canvas setup for old-school bitmap blitting/interpolation
+        self.canvas_width = self.width * self.scale
+        self.canvas_height = self.height * self.scale
+        self.canvas_bitmap = displayio.Bitmap(self.canvas_width, self.canvas_height, 14)
         
-        for y in range(4):
-            for x in range(4):
+        self.canvas_grid = displayio.TileGrid(
+            self.canvas_bitmap,
+            pixel_shader=self.palette
+        )
 
-                tg = displayio.TileGrid(
-                    self.tilesheet, 
-                    pixel_shader=self.palette,
-                    width=1, 
-                    height=1,
-                    tile_width=self.scale,
-                    tile_height=self.scale
-                )
-                tg.x = x * self.scale
-                tg.y = y * self.scale
-                tg[0, 0] = 0
-                self.tile_grids[y][x] = tg
-                self.board_group.append(tg)
-
+        self.board_group = displayio.Group(x=boardx, y=boardy)
+        self.board_group.append(self.canvas_grid)
         self.group.append(self.board_group)
 
-        self.board_array = [[0 for _ in range(4)] for _ in range(4)]
+        # Initialize board with MemoryNumber objects
+        self.board_array = [[MemoryNumber(0, x, y) for x in range(4)] for y in range(4)]
         self.score = 0
         self.spawn_new_numbers = [2, 4]
         self.directions = ["right", "up", "left", "down"]
         self.arrows = [self.arrowRight, self.arrowUp, self.arrowLeft, self.arrowDown]
         self.direction_index = 0
+        self.curframe = 10
+        self.max_frame = 10
         self.setActiveArrow(self.direction_index)
         
         self.game_reset()
-        self.draw_stuff()
 
     def game_reset(self):
-        self.board_array = [[0 for _ in range(4)] for _ in range(4)]
+        for y in range(4):
+            for x in range(4):
+                tile = self.board_array[y][x]
+                tile.number = 0
+                tile.ix = x
+                tile.iy = y
+                tile.ox = x
+                tile.oy = y
         self.score = 0
         self.spawn_number()
         self.spawn_number()
+        self.draw_stuff()
         
     def spawn_number(self):
-        empty_tiles = [(x, y) for y in range(4) for x in range(4) if self.board_array[y][x] == 0]
+        empty_tiles = [(x, y) for y in range(4) for x in range(4) if self.board_array[y][x].number == 0]
         if empty_tiles:
             rx, ry = random.choice(empty_tiles)
-            self.board_array[ry][rx] = random.choice(self.spawn_new_numbers)
+            tile = self.board_array[ry][rx]
+            tile.number = random.choice(self.spawn_new_numbers)
+            tile.ix = rx
+            tile.iy = ry
+            tile.ox = rx
+            tile.oy = ry
 
     def val_to_palette_index(self, val):
         if val == 0:
@@ -145,104 +160,170 @@ class Game2048Page(GamePage):
             index += 1
         return min(index, 11)
 
-    # --- movement ---
-    def col_squash_empty_spaces(self, board, col, dir="down"):
-        if dir == "down":
-            for i in range(2, -1, -1):
-                if board[i+1][col] == 0:
-                    board[i][col], board[i+1][col] = board[i+1][col], board[i][col]
-        elif dir == "up":
-            for i in range(3):
-                if board[i][col] == 0:
-                    board[i][col], board[i+1][col] = board[i+1][col], board[i][col]
-
-    def col_squash_same_numbers(self, board, col, dir="down"):
-        if dir == "down":
-            for i in range(2, -1, -1):
-                if board[i+1][col] == board[i][col] and board[i][col] != 0:
-                    board[i+1][col] *= 2
-                    board[i][col] = 0
-                    self.score += board[i+1][col]
-        elif dir == "up":
-            for i in range(3):
-                if board[i][col] == board[i+1][col] and board[i+1][col] != 0:
-                    board[i][col] *= 2
-                    board[i+1][col] = 0
-                    self.score += board[i][col]
-
-    def squash_col(self, col, dir="down"):
-        for _ in range(3):
-            self.col_squash_empty_spaces(self.board_array, col, dir)
-        self.col_squash_same_numbers(self.board_array, col, dir)
-        for _ in range(3):
-            self.col_squash_empty_spaces(self.board_array, col, dir)
-
-    def row_squash_empty_spaces(self, row, dir="right"):
-        if dir == "right":
-            for i in range(3):
-                if row[i+1] == 0:
-                    row[i+1], row[i] = row[i], row[i+1]
-        elif dir == "left":
-            for i in range(3, 0, -1):
-                if row[i - 1] == 0:
-                    row[i-1], row[i] = row[i], row[i-1]
-
-    def row_squash_same_numbers(self, row, dir="right"):
-        if dir == "right":
-            for i in range(2, -1, -1):
-                if row[i+1] == row[i] and row[i] != 0:
-                    row[i+1] *= 2
-                    row[i] = 0
-                    self.score += row[i+1]
-        elif dir == "left":
-            for i in range(3):
-                if row[i] == row[i+1] and row[i+1] != 0:
-                    row[i] *= 2
-                    row[i+1] = 0
-                    self.score += row[i]
-
-    def squash_row(self, row, dir="right"):
-        for _ in range(3):
-            self.row_squash_empty_spaces(row, dir)
-        self.row_squash_same_numbers(row, dir)
-        self.row_squash_empty_spaces(row, dir)
-
-    def move_right(self):
-        for row in self.board_array:
-            self.squash_row(row, dir="right")
-        self.spawn_number()
-
-    def move_left(self):
-        for row in self.board_array:
-            self.squash_row(row, dir="left")
-        self.spawn_number()
-
-    def move_down(self):
-        for i in range(4):
-            self.squash_col(i, dir="down")
-        self.spawn_number()
-
-    def move_up(self):
-        for i in range(4):
-            self.squash_col(i, dir="up")
-        self.spawn_number()
-        
-
-
-
-
-
-    def draw_stuff(self):
+    def update_all_olds(self):
         for y in range(4):
             for x in range(4):
-                val = self.board_array[y][x]
-                tile_idx = self.val_to_palette_index(val)
+                tile = self.board_array[y][x]
+                tile.update_old()
+                tile.ix = x
+                tile.iy = y
+                tile.ox = x
+                tile.oy = y
 
-                # point to the right graphic
-                self.tile_grids[y][x][0, 0] = tile_idx
+    def col_squash_empty_spaces(self, col, dir="down"):
+        if dir == "down":
+            for i in range(2, -1, -1):
+                if self.board_array[i+1][col].number == 0 and self.board_array[i][col].number != 0:
+                    t1 = self.board_array[i][col]
+                    t2 = self.board_array[i+1][col]
+                    t2.ox, t1.ox = t1.ox, t2.ox
+                    t2.oy, t1.oy = t1.oy, t2.oy
+                    self.board_array[i+1][col], self.board_array[i][col] = t1, t2
+                    t1.iy = i+1
+                    t2.iy = i
+        elif dir == "up":
+            for i in range(3):
+                if self.board_array[i][col].number == 0 and self.board_array[i+1][col].number != 0:
+                    t1 = self.board_array[i+1][col]
+                    t2 = self.board_array[i][col]
+                    t2.ox, t1.ox = t1.ox, t2.ox
+                    t2.oy, t1.oy = t1.oy, t2.oy
+                    self.board_array[i][col], self.board_array[i+1][col] = t1, t2
+                    t1.iy = i
+                    t2.iy = i+1
+
+    def col_squash_same_numbers(self, col, dir="down"):
+        if dir == "down":
+            for i in range(2, -1, -1):
+                t1 = self.board_array[i+1][col]
+                t2 = self.board_array[i][col]
+                if t1.number != 0 and t2.number != 0 and t1.number == t2.number:
+                    t1.number *= 2
+                    t2.number = 0
+                    t2.oy = i
+                    t2.iy = i+1
+                    self.score += t1.number
+                    
+        elif dir == "up":
+            for i in range(3):
+                t1 = self.board_array[i][col]
+                t2 = self.board_array[i+1][col]
+                if t1.number != 0 and t2.number != 0 and t1.number == t2.number:
+                    t1.number *= 2
+                    t2.number = 0
+                    t2.oy = i+1
+                    t2.iy = i
+                    self.score += t1.number
+
+    def squash_col(self, x, dir="down"):
+        for _ in range(3):
+            self.col_squash_empty_spaces(x, dir)
+        self.col_squash_same_numbers(x, dir)
+        for _ in range(3):
+            self.col_squash_empty_spaces(x, dir)
+
+    def row_squash_empty_spaces(self, y, dir="right"):
+        row = self.board_array[y]
+        if dir == "right":
+            for i in range(2, -1, -1):
+                if row[i+1].number == 0 and row[i].number != 0:
+                    t1 = row[i]
+                    t2 = row[i+1]
+                    t2.ox, t1.ox = t1.ox, t2.ox
+                    t2.oy, t1.oy = t1.oy, t2.oy
+                    row[i+1], row[i] = t1, t2
+                    t1.ix, t1.iy = i+1, y
+                    t2.ix, t2.iy = i, y
+        elif dir == "left":
+            for i in range(3):
+                if row[i].number == 0 and row[i+1].number != 0:
+                    t1 = row[i+1]
+                    t2 = row[i]
+                    t2.ox, t1.ox = t1.ox, t2.ox
+                    t2.oy, t1.oy = t1.oy, t2.oy
+                    row[i], row[i+1] = t1, t2
+                    t1.ix, t1.iy = i, y
+                    t2.ix, t2.iy = i+1, y
+
+    def row_squash_same_numbers(self, y, dir="right"):
+        row = self.board_array[y]
+        if dir == "right":
+            for i in range(2, -1, -1):
+                t1 = row[i+1]
+                t2 = row[i]
+                if t1.number != 0 and t2.number != 0 and t1.number == t2.number:
+                    t1.number *= 2
+                    t2.number = 0
+                    t2.ox, t2.oy = i, y
+                    t2.ix, t2.iy = i+1, y
+                    self.score += t1.number
+        elif dir == "left":
+            for i in range(3):
+                t1 = row[i]
+                t2 = row[i+1]
+                if t1.number != 0 and t2.number != 0 and t1.number == t2.number:
+                    t1.number *= 2
+                    t2.number = 0
+                    t2.ox, t2.oy = i+1, y
+                    t2.ix, t2.iy = i, y
+                    self.score += t1.number
+
+    def squash_row(self, y, dir="right"):
+        for _ in range(3):
+            self.row_squash_empty_spaces(y, dir)
+        self.row_squash_same_numbers(y, dir)
+        for _ in range(3):
+            self.row_squash_empty_spaces(y, dir)
+
+    def execute_move(self, move_func):
+        if self.curframe < self.max_frame:
+            return  
+            
+        self.update_all_olds()
+        move_func()
+        self.spawn_number()
+        self.curframe = 0
+
+    def move_right(self):
+        for y in range(4):
+            self.squash_row(y, dir="right")
+
+    def move_left(self):
+        for y in range(4):
+            self.squash_row(y, dir="left")
+
+    def move_down(self):
+        for x in range(4):
+            self.squash_col(x, dir="down")
+
+    def move_up(self):
+        for x in range(4):
+            self.squash_col(x, dir="up")
+
+    def draw_stuff(self):
+        bitmaptools.fill_region(self.canvas_bitmap, 0, 0, self.canvas_width, self.canvas_height, 0)
+        
+        for y in range(4):
+            for x in range(4):
+                tile = self.board_array[y][x]
+                if tile.number == 0:
+                    continue
+                    
+                tile_idx = self.val_to_palette_index(tile.number)
+                px = x * self.scale
+                py = y * self.scale
+                
+                bitmaptools.blit(
+                    self.canvas_bitmap, 
+                    self.tilesheet, 
+                    px, py, 
+                    x1=tile_idx * self.scale, 
+                    y1=0, 
+                    x2=(tile_idx + 1) * self.scale, 
+                    y2=self.scale
+                )
     
     def draw_text_direct(self, dest_bitmap, text, font, start_x, start_y, color_index=1):
-        """Blits characters directly into a target bitmap to save RAM."""
         current_x = start_x
         font.load_glyphs(text)
         
@@ -273,7 +354,7 @@ class Game2048Page(GamePage):
                 
     def setActiveArrow(self, i:int):
         for a in self.arrows:
-            a.fill = 0x444444
+            a.fill = 0x333333
         self.arrows[i].fill = 0xFFFFFF
             
     def game_short_next(self):
@@ -283,15 +364,54 @@ class Game2048Page(GamePage):
     def game_short_select(self):
         d = self.directions[self.direction_index]
         if d == "left":
-            self.move_left()
+            self.execute_move(self.move_left)
         elif d == "right":
-            self.move_right()
+            self.execute_move(self.move_right)
         elif d == "up":
-            self.move_up()
+            self.execute_move(self.move_up)
         elif d == "down":
-            self.move_down()
-        else:
-            print("what")
+            self.execute_move(self.move_down)
         
     def game_update_frame(self):
-        self.draw_stuff()
+        if self.curframe < self.max_frame:
+            progress = self.curframe / float(self.max_frame)
+            
+            bitmaptools.fill_region(self.canvas_bitmap, 0, 0, self.canvas_width, self.canvas_height, 0)
+            
+            for y in range(4):
+                for x in range(4):
+                    tile = self.board_array[y][x]
+                    if tile.number == 0:
+                        continue
+                        
+                    tile_idx = self.val_to_palette_index(tile.number)
+                    
+                    start_px_x = tile.ox * self.scale
+                    start_px_y = tile.oy * self.scale
+                    target_px_x = tile.ix * self.scale
+                    target_px_y = tile.iy * self.scale
+                    
+                    current_x = start_px_x + (target_px_x - start_px_x) * progress
+                    current_y = start_px_y + (target_px_y - start_px_y) * progress
+                    
+                    bitmaptools.blit(
+                        self.canvas_bitmap, 
+                        self.tilesheet, 
+                        int(current_x), int(current_y), 
+                        x1=tile_idx * self.scale, 
+                        y1=0, 
+                        x2=(tile_idx + 1) * self.scale, 
+                        y2=self.scale
+                    )
+            
+            self.curframe += 1
+            
+            if self.curframe >= self.max_frame:
+                for y in range(4):
+                    for x in range(4):
+                        tile = self.board_array[y][x]
+                        tile.ix = x
+                        tile.iy = y
+                        tile.ox = x
+                        tile.oy = y
+                self.draw_stuff()
