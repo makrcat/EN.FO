@@ -113,27 +113,61 @@ class SnakePage(GamePage):
     def game_step(self):
         if not self.checkIfReviveYet():
             return
-        
+
         old_x = self.snake[0][0]
         old_y = self.snake[0][1]
+
         dx = self.directions[self.d_index][0]
         dy = self.directions[self.d_index][1]
-        
+
         new_one = (old_x + dx, old_y + dy)
-        
-        hit_apple = False
-        if new_one[0] == self.apple[0] and new_one[1] == self.apple[1]:
-            self.spawn_apple()
-            hit_apple = True
-            
-        hit_itself = new_one in self.snake
-        
-        if (new_one[0] < 0 or new_one[0] >= self.width or new_one[1] < 0 or new_one[1] >= self.height) or hit_itself:
+
+        # Check if we're eating the apple
+        hit_apple = new_one == self.apple
+
+        # Check walls
+        hit_wall = (
+            new_one[0] < 0 or
+            new_one[0] >= self.width or
+            new_one[1] < 0 or
+            new_one[1] >= self.height
+        )
+
+        if hit_wall:
             self.snake_dead = True
             self.dead_time = time.monotonic()
+            return
+
+        self.snake.insert(0, new_one)
+        if not hit_apple:
+            self.snake.pop()
+
         else:
-            self.snake.insert(0, new_one)
-            if not hit_apple: self.snake.pop()  
+            self.spawn_apple()
+
+            if not self.checkIfReviveYet():
+                return
+            
+            old_x = self.snake[0][0]
+            old_y = self.snake[0][1]
+            dx = self.directions[self.d_index][0]
+            dy = self.directions[self.d_index][1]
+            
+            new_one = (old_x + dx, old_y + dy)
+            
+            hit_apple = False
+            if new_one[0] == self.apple[0] and new_one[1] == self.apple[1]:
+                self.spawn_apple()
+                hit_apple = True
+                
+            hit_itself = new_one in self.snake
+            
+            if (new_one[0] < 0 or new_one[0] >= self.width or new_one[1] < 0 or new_one[1] >= self.height) or hit_itself:
+                self.snake_dead = True
+                self.dead_time = time.monotonic()
+            else:
+                self.snake.insert(0, new_one)
+                if not hit_apple: self.snake.pop()  
 
     def draw_stuff(self):
         self.bitmap.fill(0)
@@ -141,14 +175,18 @@ class SnakePage(GamePage):
         for i, segment in enumerate(self.snake):
             if 0 <= segment[0] < self.width and 0 <= segment[1] < self.height:
                 if i == 0:
-                    # Select active vs inactive grid based on death state
+                    
+                    
+                    # select head tile grid
                     active_grid = self.dead_tile_grid if self.snake_dead else self.head_tile_grid
                     inactive_grid = self.head_tile_grid if self.snake_dead else self.dead_tile_grid
                     
                     active_grid.hidden = False
                     inactive_grid.hidden = True
                     
-                    # Update position and orientation for the active head
+                   
+                   
+                   
                     active_grid.x = self.boardx + segment[0] * self.scale
                     active_grid.y = self.boardy + segment[1] * self.scale
                     

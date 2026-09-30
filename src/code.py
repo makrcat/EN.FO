@@ -17,6 +17,7 @@ from SettingsPage import SettingsPage
 from LoggerPage import LoggerPage
 from SnakePage import SnakePage
 from battery import Battery
+from Game2048Page import Game2048Page
 
 time.sleep(1.0) 
 import gc
@@ -31,7 +32,7 @@ select_button = None
 battery_pin = None
 
 
-COMPUTER = True
+COMPUTER = False
 
 
 if COMPUTER:
@@ -142,10 +143,11 @@ PAGE_CLASSES = [
     LoggerPage,
     SettingsPage,
     SnakePage,
-    PacManPage
+    PacManPage,
+    Game2048Page,
 ]
 
-page_index = 7
+page_index = 8
 current_page = None
 SELECT_DOWN_ON_PRESS = False
 
@@ -230,7 +232,8 @@ def handle_buttons_modes():
     if select_button_pressed and not select_button_pressed_last: 
         select_time_start_down = time.monotonic()
         long_press_fired = False
-        SMODE = True
+        if SELECT_DOWN_ON_PRESS:
+            SMODE = True
         
     elif select_button_pressed:
         if (not long_press_fired) and time.monotonic() - select_time_start_down >= long_thresh:
@@ -239,15 +242,14 @@ def handle_buttons_modes():
             
     elif (select_button_pressed_last and not select_button_pressed 
           and time.monotonic() - select_time_start_down < long_thresh):
-        SMODE = True
+        if not SELECT_DOWN_ON_PRESS:
+            SMODE = True
         
     if next_button_pressed and not next_button_pressed_last:
         NMODE = True
         
     next_button_pressed_last = next_button_pressed
     select_button_pressed_last = select_button_pressed
-    
-    
     
 # Gemini-generated ####
 def handle_buttons_modes_computer():
@@ -309,7 +311,7 @@ while True:
     now = time.monotonic()
 
     if now - last_gc_time > GC_INTERVAL:
-        #print("Free RAM:", gc.mem_free(), "bytes")
+        print("Free RAM:", gc.mem_free(), "bytes")
         gc.collect()
         last_gc_time = now
         #print(gc.mem_free(), gc.mem_alloc())
