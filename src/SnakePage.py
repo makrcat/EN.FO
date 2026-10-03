@@ -4,8 +4,10 @@ from adafruit_display_text import label
 from fonts import NINE
 from GamePage import GamePage
 from adafruit_display_shapes.rect import Rect
+from adafruit_display_shapes.line import Line
 import random
 import time
+from my_utilities import add_outline
 
 class SnakePage(GamePage):
     def __init__(self, store):
@@ -21,14 +23,13 @@ class SnakePage(GamePage):
         self.boardx = boardx
         self.boardy = boardy
     
-        self.outline = Rect(
+        add_outline(self.group,
             x=boardx-1, 
             y=boardy-1, 
             width = self.width * self.scale + 2, 
             height = self.height * self.scale + 2,
             fill = None, 
             outline=0xFFFFFF)
-        self.group.append(self.outline)
         
         self.bitmap = displayio.Bitmap(self.width, self.height, 4)
 

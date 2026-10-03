@@ -5,8 +5,10 @@ import displayio
 from adafruit_display_shapes.circle import Circle
 from adafruit_display_shapes.rect import Rect
 from adafruit_display_shapes.triangle import Triangle
+from adafruit_display_shapes.line import Line
 from adafruit_display_text import label
 import terminalio
+from my_utilities import add_outline
 
 from GamePage import GamePage
 
@@ -331,7 +333,6 @@ class PacManGame:
     def rotate_prev(self):
         self.pacman_input_dir = (self.pacman_input_dir - 1) % 4
 
-
 class PacManPage(GamePage):
     def __init__(self, store):
         super().__init__(
@@ -348,7 +349,7 @@ class PacManPage(GamePage):
         self.boardx = boardx
         self.boardy = boardy
 
-        self.outline = Rect(
+        add_outline(self.group,
             x=boardx - 1,
             y=boardy - 1,
             width=19 * scale + 2,
@@ -356,7 +357,6 @@ class PacManPage(GamePage):
             fill=None,
             outline=0xFFFFFF,
         )
-        self.group.append(self.outline)
 
         self.game = PacManGame(
             boardx=boardx,

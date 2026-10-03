@@ -235,7 +235,7 @@ class AQIPage(Page):
     def data_schedule_update(self):
         readings = self.store.getVariableData()
         self.graph.draw_the_shit(
-            readings.get_data_log(),
+            self.store.get_converted_log(),
             self.store.get_setting("interval"),
             readings.max_samples
         )

@@ -3,6 +3,7 @@ import terminalio
 import bitmaptools
 from adafruit_display_text import label, wrap_text_to_pixels
 from array import array
+from adafruit_display_shapes.line import Line
 import json
 import time
 
@@ -10,6 +11,30 @@ import math
 
 
 DATA_RANGE = [15, 30]
+
+
+
+
+def add_outline(group, x, y, width, height, outline=0xFFFFFF, fill=None):
+    w = width
+    h = height
+    
+    if fill is not None:
+        strip = displayio.Bitmap(w, 1, 1)
+        pal = displayio.Palette(1)
+        pal[0] = fill
+        group.append(displayio.TileGrid(
+            strip, pixel_shader=pal,
+            width=1, height=h,
+            tile_width=w, tile_height=1,
+            x=x, y=y
+        ))
+
+    if outline is not None:
+        group.append(Line(x, y, x + w - 1, y, outline))
+        group.append(Line(x, y + h - 1, x + w - 1, y + h - 1, outline))
+        group.append(Line(x, y, x, y + h - 1, outline))
+        group.append(Line(x + w - 1, y, x + w - 1, y + h - 1, outline))
 
 class MomentaryText:
     def __init__(self, label, text, interval):
@@ -275,10 +300,10 @@ class DataStore:
 
     def getPressCat(self):
         p = self.getVal("pressure")
-        if p <= 1000: return 0
-        elif p <= 1008: return 1
-        elif p <= 1023: return 2
-        elif p <= 1033: return 3
+        if p <=  995: return 0
+        elif p <= 1013: return 1
+        elif p <= 1020: return 2
+        elif p <= 1030: return 3
         else: return 4
         
     def log10(self, n):
@@ -327,8 +352,10 @@ class DataStore:
         elif metric == 'pressure_category': return self.getPressCat()
         elif metric == 'confidence': return self.getConfidence()
 
-    def getConvertedVal(self, metric) -> str:
-        val = self.getVal(metric)
+    def getConvertedVal(self, metric, val=None) -> str:
+        if not val: val = self.getVal(metric)
+        
+        
         if metric == 'altitude':
             if self.settings["measurement_unit"] == "ft":
                 return round(val * 3.28084, 1)
@@ -343,6 +370,11 @@ class DataStore:
                 
                 
         return val
+    
+    
+    def get_converted_log(self):
+        return [self.getConvertedVal(self.active_metric, v)
+            for v in self.active_reading.get_data_log()]
 
     def update(self) -> None:
         try:

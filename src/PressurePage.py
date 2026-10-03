@@ -64,7 +64,7 @@ class HILOBox(displayio.Group):
 
 pinfo = [
     ("Stormy Weather", "Very unstable weather! Severe storms and winds are imminent."),
-    ("Unstable Weather", "Unstable weather. Be ready for light wind and rain!"),
+    ("Unstable Weather", "Unstable weather, it may change quicky to cold or hot."),
     ("Regular Weather", "Very regular and fair weather. Expect clouds and some sun."),
     ("Clear Skies", "Stable weather. Expect dry air, clear skies, and sunshine."),
     ("Sky high", "Stable weather, but intense cold or heat depending on season.")
@@ -177,7 +177,7 @@ class PressurePage(Page):
     def data_schedule_update(self):
         readings = self.store.getVariableData()
         self.graph.draw_the_shit(
-                    readings.get_data_log(),
+                    self.store.get_converted_log(),
                     self.store.get_setting("interval"),
                     readings.max_samples
                 )

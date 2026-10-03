@@ -68,11 +68,23 @@ class TamagotchiArea(displayio.Group):
     def __init__(self, x, y):
         super().__init__(x=x, y=y)
         
-        self.emoticon_label = label.Label(PRAGATI_42, text="(>_<)", color=0xFFFFFF, anchor_point=(0.0, 0.0), anchored_position=(0, 4), scale=1)
+        self.emoticon_label = label.Label(PRAGATI_42, text="(?_?)", color=0xFFFFFF, anchor_point=(0.0, 0.0), anchored_position=(0, 4), scale=1)
         self.append(self.emoticon_label)
 
     def update(self, store):
-        self.emoticon_label.text = "(>_<)" 
+        self.update_emoticon_label(store.getVal('temperature'))
+        
+    def update_emoticon_label(self, t):
+        if t < 10:
+            self.emoticon_label.text = "(x_x)"
+        elif 10 <= t < 18:
+            self.emoticon_label.text = "(;_;)"
+        elif 18 <= t <= 24:
+            self.emoticon_label.text = "(^_^)"
+        elif 24 < t <= 30:
+            self.emoticon_label.text = "(>_<)"
+        else:
+            self.emoticon_label.text = "(#_#)" 
 
 
 def weather_cat(temp):
@@ -87,7 +99,7 @@ pinfo = [
     ("Freezing", "Dangerously cold, wear many layers of clothes."),
     ("Cold Weather", "Cold weather, watch for wind! Drink some warm water."),
     ("Cool Weather", "Crisp and refreshing weather, a jacket will do."),
-    ("Nice Weather", "It's comfortable weather, good for strolling outdoors."),
+    ("Nice Weather", "It's comfortable weather, good for strolling around."),
     ("Very hot", "It's very hot, make sure to drink lots of water!"), 
     ("Sweltering", "Risk of heat stroke, try to stay in the shade or inside.")
 ]
@@ -184,6 +196,7 @@ class TemperaturePage(Page):
         self.dew_box.update(self.store)
         self.FL_box.update(self.store)
         self.description_box.update(self.store)
+        self.tamagotchi_box.update(self.store)
         
         self.headerMomentary.checkForUpdate()
 
@@ -191,7 +204,7 @@ class TemperaturePage(Page):
     def data_schedule_update(self):
         readings = self.store.getVariableData()
         self.graph.draw_the_shit(
-            readings.get_data_log(),
+            self.store.get_converted_log(),
             self.store.get_setting("interval"),
             readings.max_samples,
         )

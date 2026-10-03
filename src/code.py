@@ -147,27 +147,42 @@ PAGE_CLASSES = [
     Game2048Page,
 ]
 
-page_index = 0
+page_index = 8
 current_page = None
 SELECT_DOWN_ON_PRESS = False
 
-def show_page(idx):
-    global current_page, SELECT_DOWN_ON_PRESS
 
-    # save settings if leaving settingspage
-    if current_page is not None:
-        if type(current_page).__name__ == "SettingsPage":
-            if current_page.needs_write_update():
-                data_store.save_settings()
+def release_page():
+    global current_page
+    if current_page is None:
+        return
+    if type(current_page).__name__ == "SettingsPage":
+        if current_page.needs_write_update():
+            data_store.save_settings()
 
-    # clear old page
     while len(content_group) > 0:
+        g = content_group[len(content_group) - 1]
+        while len(g) > 0:
+            g.pop()
         content_group.pop()
 
+    # drop every attribute so nothing is kept alive through the page object
+    for name in dir(current_page):
+        if not name.startswith("__"):
+            try:
+                setattr(current_page, name, None)
+            except Exception:
+                pass
     current_page = None
-    gc.collect()
+    
+    
 
-    # create new page
+def show_page(idx):
+    global current_page, SELECT_DOWN_ON_PRESS, COMPUTER
+
+    global current_page, SELECT_DOWN_ON_PRESS
+    gc.collect()
+    # print("pre-build", gc.mem_free())
     current_page = PAGE_CLASSES[idx](data_store)
 
     # select behavior depends on the NEW page
@@ -182,6 +197,8 @@ def show_page(idx):
 
     display.refresh()
     gc.collect()
+    
+    if not COMPUTER: print(type(current_page).__name__, gc.mem_free())
 
     
 
@@ -215,7 +232,11 @@ NMODE = False
 L_SMODE = False
 select_time_start_down = 0
 long_press_fired = False # prevent the long press always being written True while pressed
-long_thresh = 2.5
+long_thresh = 1.5
+
+
+
+
 
 def handle_buttons_modes():
     global next_button_pressed_last, select_button_pressed_last
@@ -329,6 +350,8 @@ while True:
 
     if NMODE:
         if current_page.on_short_next() != False:
+            release_page()
+            gc.collect()
             pagers()
         else:
             upd = True
