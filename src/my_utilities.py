@@ -203,7 +203,7 @@ class DataStore:
         self.rollingLog = RollingLog(3, 5)
         
         self.custom = {
-            "baseline_gas_resistance": 147500,
+            "baseline_gas_resistance": 97500,
             "baseline_humidity": 40
         }
         

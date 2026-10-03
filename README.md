@@ -4,11 +4,21 @@ The **EN.FO** is a personal project for tracking the environment when outdoors. 
 
 Around the end stages submitted to hack club stardance, which is why I'm making this readme a bit longer.
 
-[note to self add pictures in the morning]
+Some sorta cool stuff:
+
+
+<img src="readme_images/bmp.jpeg" height="300px">
+<img src="readme_images/e-ink.jpeg" height="300px">
+
+<img src="readme_images/blarb.jpeg" height="300px">
+<img src="readme_images/playing.gif" height="300px">
+
+
+CAD model - https://cad.onshape.com/documents/2de4779b51845175f3a3e786/w/7837df9d32ef23797361ec83/e/9a8511381228d62ac6592067?renderMode=0&uiState=6abf75e68beab4dd691114fb
 
 ## info
 
-programs that go into the microcontroller are  `src`, `graphics`, and `fontsPCF`, side by side on root. `/` I use vscode to program, but I used Thonny to handle the flashing. You also have to install the libraries separately on Thonny, but it only takes a bit.
+programs that go into the microcontroller are  `src`, `graphics`, `settings.json`, `logger.json`, and `fontsPCF`, side by side on root. `/` I use vscode to program, but I used Thonny to handle the flashing. You also have to install the libraries separately on Thonny, but it only takes a bit.
 
 ### BOM
 
