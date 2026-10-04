@@ -1,0 +1,11 @@
+﻿pos_x,pos_y,rotation,side,designator,mpn,pack,footprint,value,mount_type
+108.5248,-41.7908,180.0,top,J1,,,PinSocket_1x06_P2.54mm_Vertical,BME680,tht
+77.5618,-30.5612,90.0,top,J3,,,PinSocket_1x08_P2.54mm_Vertical,ST7789,tht
+116.8302,-31.247,180.0,top,J5,,,JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal,Battery,tht
+115.9337,-55.9388,0.0,top,J6,,,PinSocket_1x04_P2.54mm_Vertical,UPS,tht
+93.3098,-73.7412,0.0,top,NEXT1,,,SW_PUSH_6mm,SW_Push,tht
+104.7144,-36.9366,-90.0,top,R1,,,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,100K,tht
+104.7144,-49.7382,-90.0,top,R2,,,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,33K,tht
+72.5858,-73.7412,0.0,top,SELECT1,,,SW_PUSH_6mm,SW_Push,tht
+85.0122,-23.9064,180.0,top,SW1,,,SW_Slide_SPDT_Angled_CK_OS102011MA1Q,SW_SPDT,tht
+115.8142,-70.8964,0.0,top,U1,,,XIAO-ESP32-C6-DIP,XIAO-ESP32-C6-DIP,smt

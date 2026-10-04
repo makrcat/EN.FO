@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP rp2040_zero
+D LCC-22(18x23.5) Development Boards & Kits ROHS 133 MHz
+K
+F https://www.waveshare.com/wiki/RP2040-Zero?srsltid=AfmBOoqtyFfcNonK0kOXx1ntg4STFy-z9E2BzvO-uaxGeiJPOuJ5usgg#Introduction
+$ENDCMP
+#
+#End Doc Library

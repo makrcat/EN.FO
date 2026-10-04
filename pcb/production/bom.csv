@@ -1,0 +1,10 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+J1,PinSocket_1x06_P2.54mm_Vertical,1,BME680,
+J3,PinSocket_1x08_P2.54mm_Vertical,1,ST7789,
+J5,JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal,1,Battery,
+J6,PinSocket_1x04_P2.54mm_Vertical,1,UPS,
+"NEXT1, SELECT1",SW_PUSH_6mm,2,SW_Push,
+R1,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,1,100K,
+R2,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,1,33K,
+SW1,SW_Slide_SPDT_Angled_CK_OS102011MA1Q,1,SW_SPDT,
+U1,XIAO-ESP32-C6-DIP,1,XIAO-ESP32-C6-DIP,

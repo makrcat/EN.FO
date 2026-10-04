@@ -1,0 +1,10 @@
+﻿Designator,Quantity,Value,Footprint,Package,MPN,DNP,Mount_Type,Description
+J1,1,BME680,PinSocket_1x06_P2.54mm_Vertical,,,,tht,"Generic connector, single row, 01x06, script generated"
+J3,1,ST7789,PinSocket_1x08_P2.54mm_Vertical,,,,tht,"Generic connector, single row, 01x08, script generated"
+J5,1,Battery,JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal,,,,tht,"Generic connector, single row, 01x02, script generated"
+J6,1,UPS,PinSocket_1x04_P2.54mm_Vertical,,,,tht,"Generic connector, single row, 01x04, script generated"
+"NEXT1, SELECT1",2,SW_Push,SW_PUSH_6mm,,,,tht,"Push button switch, generic, two pins"
+R1,1,100K,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,,,,tht,Resistor
+R2,1,33K,R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,,,,tht,Resistor
+SW1,1,SW_SPDT,SW_Slide_SPDT_Angled_CK_OS102011MA1Q,,,,tht,"Switch, single pole double throw"
+U1,1,XIAO-ESP32-C6-DIP,XIAO-ESP32-C6-DIP,,,,smt,
