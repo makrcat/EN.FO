@@ -41,6 +41,10 @@ I use vscode to program, but I used Thonny to handle the flashing.
 - You also have to install the libraries separately on Thonny, but it only takes a bit.
 
 
+## In case you want to actually make one
+
+Check if you are soldering the ESP-32 so that it's "right side up", or label-side down. It should show the SEEED STUDIO chip on top, as well as the USB-C. Same goes with the UPS module, make sure the USB-C is on top. Or else you have to edit the CAD to match.
+
 ## Testing the program locally
 
 I wanted to test the UI quickly, so the computer simulation is for that. The data is simulated in `mockIC.py`. 
