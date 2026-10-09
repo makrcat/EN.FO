@@ -1,6 +1,6 @@
 ## outdoorsy-gadget
 
-<img src="assets/playing.gif" height="300px">
+<img src="assets/playing.gif" width="600px">
 
 The **EN.FO** is a personal project for tracking the environment when outdoors. It measures altitude (pressure), temperature, humidity, and air quality through the BME680 chip. And it also has games now :3c
 
@@ -9,7 +9,7 @@ Around the end stages submitted to hack club stardance.
 
 
 
-<img src="assets/blarb.jpeg" height="300px">
+<img src="assets/blarb.jpeg" width="600px">
 
 ## Why I made this
 
@@ -22,8 +22,9 @@ It would be pretty neat to get momentary values from a sensor for the surroundin
 [![View PCB on KiCanvas](https://hack.club/pcb-badge)](https://kicanvas.org/?repo=https://github.com/makrcat/EN.FO/tree/main/pcb)
 
 
-<img src="assets/CAD.png" height="300px">
-<img src="assets/kicad_model.png" height="300px">
+<img src="assets/CAD.png" width="600px">
+
+<img src="assets/kicad_model.png" width="600px">
 
 https://cad.onshape.com/documents/2de4779b51845175f3a3e786/w/7837df9d32ef23797361ec83/e/9a8511381228d62ac6592067?renderMode=0&uiState=6abf75e68beab4dd691114fb 
 
