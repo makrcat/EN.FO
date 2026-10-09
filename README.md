@@ -36,6 +36,8 @@ https://cad.onshape.com/documents/2de4779b51845175f3a3e786/w/7837df9d32ef2379736
 - Also, having a fuse would probably be good (just in case you short out components).
 
 
+Install circuitpython! Then,
+
 I use vscode to program, but I used Thonny to handle the flashing.
 - Programs that go into the microcontroller are  `src`, `graphics`, `settings.json`, `logger.json`, and `fontsPCF`, side by side on root`/`. 
 - You also have to install the libraries separately on Thonny, but it only takes a bit.
@@ -43,7 +45,7 @@ I use vscode to program, but I used Thonny to handle the flashing.
 
 ## In case you want to actually make one
 
-Check if you are soldering the ESP-32 so that it's "right side up", or label-side down. It should show the SEEED STUDIO chip on top, as well as the USB-C. Same goes with the UPS module, make sure the USB-C is on top. Or else you have to edit the CAD to match.
+Check if you are soldering the ESP-32 so that it's "bottom side up", or label-side up. The USB-C should be on the bottom. Same goes with the UPS module, make sure the USB-C is on the bottom. Or else you have to edit the CAD to match.
 
 ## Testing the program locally
 
