@@ -1,4 +1,3 @@
-
 ---
 title: "EN.FO"
 github: "https://github.com/makrcat/EN.FO"
@@ -26,9 +25,12 @@ As per class inheritance structure, I split each page into its own class. Each p
 
 Uses circuitpython for UI.
 
-![](https://fabricate.hackclub-assets.com/3e47cdf883c9c3612142ea7e6b835ae8b5619dec0f6acec5d2e21d32a063e8ff/image-jpeg/blarb.jpeg)
-![](https://fabricate.hackclub-assets.com/42c26fa19bfcc3c688a191c4d8237a568c1794ad986cdc92af2cf7f4ef3e8bda/image-png/Screenshot%202026-10-23%20at%208.32.37%E2%80%AFPM.png)
-![](https://fabricate.hackclub-assets.com/35ce6a031879425171b5ca06a6886b5d0a08e5a30d46a8e0e0e5d2c1ba819031/image-png/kicad_model.png)
-![](https://fabricate.hackclub-assets.com/eeed687c8a82d56d2ff104aa2dc7667d4cccc6af12e08caf8425f549191babf9/image-png/CAD.png)
+<img src="https://fabricate.hackclub-assets.com/3e47cdf883c9c3612142ea7e6b835ae8b5619dec0f6acec5d2e21d32a063e8ff/image-jpeg/blarb.jpeg" width="500">
+
+<img src="https://fabricate.hackclub-assets.com/42c26fa19bfcc3c688a191c4d8237a568c1794ad986cdc92af2cf7f4ef3e8bda/image-png/Screenshot%202026-10-23%20at%208.32.37%E2%80%AFPM.png" width="500">
+
+<img src="https://fabricate.hackclub-assets.com/35ce6a031879425171b5ca06a6886b5d0a08e5a30d46a8e0e0e5d2c1ba819031/image-png/kicad_model.png" width="500">
+
+<img src="https://fabricate.hackclub-assets.com/eeed687c8a82d56d2ff104aa2dc7667d4cccc6af12e08caf8425f549191babf9/image-png/CAD.png" width="500">
 
 **Total time spent: 24h**
